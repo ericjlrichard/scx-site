@@ -1,0 +1,56 @@
+
+
+@import "tailwindcss";
+@theme {
+  --color-scx-primary: #F6951E;
+  --color-scx-secondary: #002747;
+  --color-scx-ink: #0B1A1F;
+  --color-scx-paper: #FFFFFF;
+  --color-scx-accent: #25B685;
+  --color-scx-muted: #BDBDBD;
+
+  /*
+  --color-scx-dark-blue: #002747; secondary
+  --color-scx-orange: #F6951E; primary
+  --color-scx-green: #25B685; accent
+  --color-scx-black: #0A1A21; ink
+
+  */
+
+  --font-sans: "Montserrat Alternates", system-ui, sans-serif;
+  --radius-2xl: 16px;
+
+   /* Breakpoints (mobile-first) */
+  --breakpoint-sm: 40rem;  /* 640px  - large phones/smalls */
+  --breakpoint-md: 48rem;  /* 768px  - tablets */
+  --breakpoint-lg: 64rem;  /* 1024px - laptops/desktops */
+  --breakpoint-xl: 80rem;  /* 1280px - wide */
+
+}
+
+@layer utilities {
+
+  .heading-hero {
+    @apply text-scx-primary font-extrabold leading-tight text-[28px] md:text-[36px];
+  }
+}
+
+/* === Global app background === */
+:root{
+  /* tweak to your palette if needed */
+  --scx-bg-1:#0f2f44;   /* deep navy */
+  --scx-bg-2:#0b2536;   /* darker navy */
+  --scx-bg-glow:rgba(255,255,255,.035);
+}
+
+html, body, #root { min-height: 100%; }
+
+body{
+  /* layered, subtle texture + gradient */
+  background:
+    radial-gradient(900px 420px at 10% -10%, var(--scx-bg-glow), transparent 60%),
+    radial-gradient(800px 360px at 110% 0%, var(--scx-bg-glow), transparent 60%),
+    linear-gradient(180deg, var(--scx-bg-1), var(--scx-bg-2));
+  background-attachment: fixed;
+  /* keep text color unchanged so existing pages don’t break */
+}

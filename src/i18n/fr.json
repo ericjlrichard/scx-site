@@ -1,0 +1,229 @@
+{
+
+  "updateInstructionsforWebsite": "npm run build --------- scp -r dist/* debian@51.79.65.31:/srv/scx-site/dist/ -------- sudo caddy fmt --overwrite /etc/caddy/Caddyfile ----------- sudo caddy validate --config /etc/caddy/Caddyfile ------------- sudo systemctl reload caddy ",
+  "updateInstructions": "typically only need to build and upload, no caddy reload for smaller simple updates",
+
+   "meta": {
+  "contact": {
+    "title": "Contacter Swing ConneXion",
+    "desc": "Page de contact officielle de SCX à Montréal.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, SwingMontreal, ContactSCX, DanseMontreal, école de danse, lindy hop"
+  },
+  "landing": {
+    "title": "Swing ConneXion — École de danse swing à Montréal",
+    "desc": "Apprenez à danser swing, rencontrez du monde et vivez la communauté SCX sur le Plateau Mont-Royal.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, SwingMontreal, SCX, DanseSwing, PlateauMontRoyal, lindy hop",
+    "upcomingTitle": "A venir"
+  },
+  "groupClasses": {
+    "title": "Cours de groupe — Swing ConneXion",
+    "desc": "Cours de danse swing en groupe pour tous les niveaux, du débutant au avancé.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, cours de groupe swing, lindy hop, danse Montréal, apprendre à danser"
+  },
+  "mercredisswing": {
+    "title": "Intro Classes — Swing ConneXion",
+    "desc": "Discover swing dance with our weekly intro classes at Mercredis Swing Live.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, swing intro classes, swing introduction classes, swing group classes, lindy hop, dance Montreal, learn swing"
+  },
+  "introClasses": {
+    "title": "Cours d'essai — Swing ConneXion",
+    "desc": "Découvrez le swing avec nos cours d'essai à chaque semaine avec les Mercredis Swing!",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, cours d'essai swing, cours d'introduction swing, cours de groupe swing, lindy hop, danse Montréal, apprendre à danser"
+  },
+  "privatelessons": {
+    "title": "Cours privés — Swing ConneXion",
+    "desc": "Cours privés personnalisés pour progresser rapidement et débloquer votre danse.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, cours privés, coaching swing, danse Montréal, lindy hop privé"
+  },
+  "registration": {
+    "title": "Inscription — Swing ConneXion",
+    "desc": "Réservez vos cours, gérez vos inscriptions et rejoignez l'expérience SCX.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, inscription danse, cours swing, réservations Montréal"
+  },
+  "staff": {
+    "title": "L’Équipe SCX",
+    "desc": "Découvrez les professeurs, artistes et mentors de Swing ConneXion.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, enseignants swing Montréal, prof danse, lindy hop Montréal"
+  }
+},
+
+
+  "nav": {
+    "courses": "Cours",
+    "tickets": "Billets SCX20",
+    "scx20": "SCX20 Anniversaire",
+    "scx20Website": "Visitez le site web SCX20",
+    "contact": "Contact",
+    "groupClasses": "Cours de groupe",
+    "introClasses": "Cours d'essai",
+    "privateLessons": "Cours privés",
+    "staff": "Notre équipe",
+    "register": "S'inscrire"
+  },
+
+  "common": {
+    "buttons": {
+      "reserve": "Réserver un cours",
+      "buyTickets": "Acheter des billets",
+      "bookPrivate": "Réserver un cours privé"
+    }
+  },
+
+  "pages": {
+    "notFound": {
+    "imageAlt": "Page introuvable",
+    "hero": {
+      "titleLines": ["404"],
+      "desc": "Nous n’avons pas trouvé cette page."
+    },
+    "ctaHome": "Retour à l’accueil",
+    "ctaRegister": "Aller à l’inscription"
+  },
+    "payment": {
+      "pref": {
+        "title": "Modes de paiement privilégiés",
+        "intro": "En toute transparence, nous préférons redonner à la communauté plutôt que de refiler les frais de transaction. Dans cet esprit, voici nos modes de paiement privilégiés.",
+        "rbc": "Virement direct à finances.scx@gmail.com (pour les clients RBC)",
+        "interac": "Virement Interac à finances.scx@gmail.com",
+        "cash": "Comptant au premier cours (arrivez un peu à l’avance, svp)",
+        "square": "Square (cliquez sur « Procéder au paiement Square »)"
+      },
+      "imageAlt": "SCX",
+      "hero": {
+        "titleLines": ["PAIEMENT"],
+        "desc": "Vérifiez vos éléments et finalisez le paiement."
+      },
+      "empty": {
+        "message": "Aucun article à payer. Retournez à l’inscription.",
+        "back": "Retour à l’inscription"
+      },
+      "total": "Total",
+      "ctaSoon": "Procéder au paiement (bientôt)",
+      "comingSoon": "Le paiement en ligne sera branché sous peu."
+    },
+    "register": {
+      "promo": {
+  "label": "Code promo",
+  "placeholder": "Entrez le code",
+  "validate": "Valider",
+  "validTitle": "Code valide",
+  "validMessage_fallback": "Code accepté.",
+  "invalidTitle": "Code invalide",
+  "invalidMessage": "Ce code n’est pas valide.",
+  "activeCodesTitle": "Codes promo actifs",
+  "appliedBadge": "Appliqué"
+},
+      "title": "Inscription",
+      "subtitle": "Bienvenue ou re-bienvenue à SCX. Choisissez votre aventure!",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "phone": "Téléphone",
+      "kind": "Type d'inscription",
+      "kind_group": "Cours de groupe",
+      "kind_private": "Cours privés",
+      "role": "Rôle",
+      "role_lead": "Leader",
+      "role_follow": "Follower",
+      "role_versatile": "Versatile",
+      "className": "Cours",
+      "totalDue": "Montant dû (CAD)",
+      "totalPaid": "Montant payé (CAD)",
+      "note": "Message",
+      "submit": "Envoyer",
+      "sending": "Envoi…",
+      "thanks": "Merci! Votre inscription a été envoyée.",
+      "error": "Oups… une erreur est survenue. Réessayez dans un instant.",
+      "spinnerMessage": "Inscription(s) en cours de création, on vous amène à la page de paiement et confirmation bientôt",
+      "imageAlt": "Danseurs SCX",
+  "ok": "OK",
+  "selectAtLeastOne": "Veuillez choisir au moins un cours.",
+  "someFailedPrefix": "Certaines inscriptions ont échoué",
+  "okCount": "ok",
+  "failedCount": "échec",
+  "tryAgain": "Réessayez.",
+  "networkError": "Erreur réseau. Réessayez.",
+  "studentRebate": "Rabais étudiant (40 $)",
+  "studentRebate_title": "Rabais étudiant",
+  "studentRebate_help": "Applique un rabais de 40 $ par cours sélectionné (sans descendre sous 0)."
+    },
+
+    "landing": {
+      "heroTitle": "Le plaisir de bien danser",
+      "upcomingTitle": "Horaire",
+      "cta": "Inscrivez-vous dès maintenant"
+    },
+
+    "classes": {
+      "hero": {
+        "titleLines": ["COURS", "DE", "GROUPE"],
+        "desc": "Chez Swing ConneXion, nos cours de groupes sont structurés pour permettre à n’importe qui d’apprendre facilement les danses swing.",
+        "ctaReserve": "Réserver un cours",
+        "ctaTickets": "Acheter des billets"
+      }
+    },
+
+    "intro": {
+      "hero": {
+        "titleLines": ["COURS", "D'ESSAI"],
+        "desc": "Chaque mercredi au Café La Ligne Verte (2531 Ontario Est), venez essayer le swing! Cours d'intro à 19h, suivi de 3 set de musique live! ",
+        "ctaReserve": "Visiter la page Facebook des Mercredis Swing",
+        "ctaTickets": "Acheter des billets"
+      }
+    },
+
+    "mercredisswing": {
+      "hero": {
+        "titleLines": ["MERCREDIS", "SWING"],
+        "desc": "Depuis 2007, Swing ConneXion supporte la scène du musique jazz live! Chaque mercredi au Café La Ligne Verte (2531 Ontario Est), trois sets de musique jazz live vous attendent. La danse swing pique votre curiosité? Venez essayer un cours d'intro avec nous à 19h!",
+        "ctaReserve": "Visiter la page FB des Mercredis Swing",
+        "ctaTickets": "Acheter des billets"
+      }
+    },
+
+    "privates": {
+      "imageAlt": "Danseurs SCX",
+      "hero": {
+        "titleLines": ["COURS", "PRIVÉS"],
+        "desc": "Des séances personnalisées pour progresser rapidement, à votre rythme.",
+        "ctaReserve": "Réserver un cours privé"
+      }
+    },
+
+    "contact": {
+      "imageAlt": "Carte de Montréal derrière le titre",
+      "hero": { "titleTop": "CONTACTEZ", "titleBottom": "NOUS" },
+      "intro": "Nous sommes curieux de faire votre connaissance. Écrivez-nous ou appelez-nous si vous avez des questions ou des commentaires sur notre école.",
+      "studio": {
+        "title": "Le Studio",
+        "address": "1483 avenue Mont-Royal, 3e étage\n514.806.4121\ninfo@swingconnexion.com"
+      },
+      "form": {
+        "name": "nom",
+        "firstName": "prénom",
+        "email": "courriel",
+        "message": "message",
+        "submit": "Envoyer"
+      }
+    },
+
+    "staff": {
+      "hero": {
+        "titleLines": ["NOTRE", "ÉQUIPE"],
+        "desc": "Une équipe de passionné·e·s qui propulsent la scène swing de Montréal."
+      }
+    }
+  },
+
+  "footer": {
+    "signup": "Insrivez-vous à notre infolettre",
+    "agreement": "En soumettant ce formulaire, vous acceptez de recevoir des nouvelles de Swing ConneXion, des informations sur nos cours et des offres spéciales. Vous pouvez vous désabonner en tout temps."
+  }
+}
