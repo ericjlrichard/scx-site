@@ -264,6 +264,12 @@ export default function SignUp() {
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareError, setSquareError] = useState(null);
 
+  // Promo codes (multiple can stack)
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromos, setAppliedPromos] = useState([]);
+  const [promoError, setPromoError] = useState(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
   // Validation errors
   const [errors, setErrors] = useState({});
 
@@ -297,9 +303,26 @@ export default function SignUp() {
 
   // Computed totals
   const selectedClasses = classes.filter((c) => selectedIds.has(c.id));
+
+  function getPromoDiscount(cls) {
+    if (!appliedPromos.length) return 0;
+    const base = Number(cls.price) || 0;
+    const total = appliedPromos
+      .filter((p) => p.applicable_class_ids.includes(cls.id))
+      .reduce((sum, p) => {
+        const d = p.discount_type === "percent"
+          ? parseFloat((base * p.discount_value / 100).toFixed(2))
+          : p.discount_value;
+        return sum + d;
+      }, 0);
+    return Math.min(total, base);
+  }
+
   const total = selectedClasses.reduce((sum, c) => {
     const price = Number(c.price) || 0;
-    return sum + Math.max(0, price - (studentRebate ? REBATE_AMOUNT : 0));
+    const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+    const promo = getPromoDiscount(c);
+    return sum + Math.max(0, price - rebate - promo);
   }, 0);
 
   function setField(key, val) {
@@ -331,6 +354,32 @@ export default function SignUp() {
     setStep("review");
   }
 
+  async function handleApplyPromo() {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    if (appliedPromos.some((p) => p.code === code)) {
+      setPromoError(locale === "fr" ? "Ce code est déjà appliqué." : "This code is already applied.");
+      return;
+    }
+    setPromoLoading(true);
+    setPromoError(null);
+    try {
+      const res = await fetch(`${API}/validate-promo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, classIds: Array.from(selectedIds) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAppliedPromos((prev) => [...prev, { ...data, code }]);
+      setPromoInput("");
+    } catch (err) {
+      setPromoError(err.message);
+    } finally {
+      setPromoLoading(false);
+    }
+  }
+
   async function handleSubmit() {
     setSubmitting(true);
     try {
@@ -351,6 +400,7 @@ export default function SignUp() {
           classIds: Array.from(selectedIds),
           studentRebate,
           note,
+          promoCodes: appliedPromos.map((p) => p.code),
         }),
       });
       const data = await res.json();
@@ -806,15 +856,18 @@ export default function SignUp() {
                     {selectedClasses.map((cls) => {
                       const name = cls.name?.[locale] || cls.name?.fr || "";
                       const price = Number(cls.price) || 0;
-                      const afterRebate = Math.max(0, price - (studentRebate ? REBATE_AMOUNT : 0));
+                      const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+                      const promo = getPromoDiscount(cls);
+                      const final = Math.max(0, price - rebate - promo);
+                      const hasDiscount = price !== final;
                       return (
                         <div key={cls.id} className="flex justify-between items-center text-sm">
                           <span className="text-white">{name}</span>
                           <span className="text-white/80 font-semibold">
-                            {studentRebate && REBATE_AMOUNT > 0 && price !== afterRebate ? (
+                            {hasDiscount ? (
                               <>
                                 <span className="line-through text-white/40 mr-2">${price.toFixed(2)}</span>
-                                ${afterRebate.toFixed(2)}
+                                ${final.toFixed(2)}
                               </>
                             ) : (
                               `$${price.toFixed(2)}`
@@ -845,6 +898,53 @@ export default function SignUp() {
                     </p>
                   </div>
                 </label>
+
+                {/* Promo codes */}
+                <div className="space-y-2">
+                  {appliedPromos.map((p) => (
+                    <div key={p.code} className="flex items-center justify-between rounded-2xl bg-green-900/40 border border-green-500/30 px-4 py-3">
+                      <div className="text-sm">
+                        <span className="text-green-300 font-semibold">{p.name}</span>
+                        <span className="text-green-400/70 ml-2">
+                          ({p.discount_type === "percent"
+                            ? `−${p.discount_value}%`
+                            : `−$${Number(p.discount_value).toFixed(2)}`})
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setAppliedPromos((prev) => prev.filter((x) => x.code !== p.code)); setPromoError(null); }}
+                        className="text-white/40 hover:text-white/70 text-lg leading-none ml-3"
+                        aria-label="Remove promo code"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError(null); }}
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                        placeholder={locale === "fr" ? "Code promo" : "Promo code"}
+                        className="flex-1 rounded-2xl bg-white/10 border border-white/15 px-4 py-2.5 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30 text-sm font-mono uppercase"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromo}
+                        disabled={promoLoading || !promoInput.trim()}
+                        className="px-4 py-2.5 rounded-2xl bg-white/10 border border-white/15 text-sm text-white/80 font-semibold hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                      >
+                        {promoLoading
+                          ? <Spinner size={14} />
+                          : locale === "fr" ? "Utiliser" : "Redeem"}
+                      </button>
+                    </div>
+                    {promoError && <p className="text-red-400 text-xs px-1">{promoError}</p>}
+                  </div>
+                </div>
 
                 {/* Note */}
                 <div>
