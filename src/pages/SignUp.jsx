@@ -1,0 +1,925 @@
+import { useState, useEffect, useRef } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useI18n } from "../i18n/useI18n";
+import PageHero from "../components/PageHero";
+import Footer from "../components/Footer";
+import Container from "../components/Container";
+import Button from "../components/Button";
+import Spinner from "../components/Spinner";
+
+const API = "https://api.swingconnexion.ca/public";
+const REBATE_AMOUNT = 40;
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+const COOKIE_NAME = "dome_signup";
+const COOKIE_DOMAIN = ".swingconnexion.com";
+
+function setDomeCookie(token) {
+  const maxAge = 30 * 24 * 60 * 60;
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; domain=${COOKIE_DOMAIN}; max-age=${maxAge}; secure; samesite=lax; path=/`;
+}
+function getDomeCookie() {
+  const match = document.cookie.match(/(?:^|; )dome_signup=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+function clearDomeCookie() {
+  document.cookie = `${COOKIE_NAME}=; domain=${COOKIE_DOMAIN}; max-age=0; path=/`;
+}
+
+function loadRecaptcha() {
+  if (document.getElementById("recaptcha-script")) return;
+  const s = document.createElement("script");
+  s.id = "recaptcha-script";
+  s.src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+  s.async = true;
+  document.head.appendChild(s);
+}
+
+function getRecaptchaToken() {
+  return new Promise((resolve, reject) => {
+    if (!window.grecaptcha) return reject(new Error("reCAPTCHA not loaded"));
+    window.grecaptcha.ready(() => {
+      window.grecaptcha
+        .execute(RECAPTCHA_SITE_KEY, { action: "signup" })
+        .then(resolve)
+        .catch(reject);
+    });
+  });
+}
+
+const STEPS = ["info", "classes", "review"];
+
+function StepIndicator({ step }) {
+  const labels = { info: "Your Info", classes: "Classes", review: "Review" };
+  return (
+    <div className="flex items-center justify-center gap-0 mb-10">
+      {STEPS.map((s, i) => {
+        const current = s === step;
+        const done = STEPS.indexOf(step) > i;
+        return (
+          <div key={s} className="flex items-center">
+            <div className="flex flex-col items-center">
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                  done
+                    ? "bg-[var(--color-scx-primary)] text-white"
+                    : current
+                    ? "bg-white text-[var(--color-scx-secondary)]"
+                    : "bg-white/20 text-white/50"
+                }`}
+              >
+                {done ? "✓" : i + 1}
+              </div>
+              <span
+                className={`mt-1.5 text-[11px] uppercase tracking-wide font-semibold ${
+                  current ? "text-white" : done ? "text-white/70" : "text-white/40"
+                }`}
+              >
+                {labels[s]}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div
+                className={`w-16 h-px mx-2 mb-5 transition-colors ${
+                  done ? "bg-[var(--color-scx-primary)]" : "bg-white/20"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RoleButton({ value, selected, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors border ${
+        selected
+          ? "bg-[var(--color-scx-primary)] border-[var(--color-scx-primary)] text-white"
+          : "bg-white/10 border-white/20 text-white/70 hover:bg-white/20"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ClassCard({ cls, selected, onToggle, lang }) {
+  const name = cls.name?.[lang] || cls.name?.fr || "";
+  const desc = cls.desc?.[lang] || cls.desc?.fr || "";
+  const teachers = Array.isArray(cls.teachers)
+    ? cls.teachers.map((t) => t.first_name).join(", ")
+    : "";
+
+  const dayStr = cls.date
+    ? new Date(cls.date + "T12:00:00").toLocaleDateString(
+        lang === "en" ? "en-CA" : "fr-CA",
+        { weekday: "long", month: "long", day: "numeric" }
+      )
+    : "";
+
+  const price = Number(cls.price) || 0;
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`w-full text-left rounded-2xl border px-5 py-4 transition-all ${
+        selected
+          ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
+          : "border-white/15 bg-white/5 hover:bg-white/10"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+                selected
+                  ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]"
+                  : "border-white/40"
+              }`}
+            >
+              {selected && <span className="text-white text-xs">✓</span>}
+            </span>
+            <h3 className="font-bold text-white text-[15px]">{name}</h3>
+          </div>
+          {desc && (
+            <p className="mt-1 ml-7 text-sm text-white/65 leading-snug">{desc}</p>
+          )}
+          <div className="mt-2 ml-7 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/60">
+            {dayStr && <span>📅 {dayStr}</span>}
+            {cls.time && <span>🕐 {cls.time.slice(0, 5)}</span>}
+            {teachers && <span>👤 {teachers}</span>}
+            {cls.duration_weeks && <span>📆 {cls.duration_weeks} weeks</span>}
+          </div>
+        </div>
+        <div className="flex-shrink-0 text-right">
+          <span className="font-bold text-white text-lg">
+            ${price.toFixed(2)}
+          </span>
+          <div className="text-xs text-white/50">CAD</div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+export default function SignUp() {
+  const { lang } = useParams();
+  const [searchParams] = useSearchParams();
+  const { t } = useI18n();
+  const locale = (lang || "fr").startsWith("en") ? "en" : "fr";
+
+  const [step, setStep] = useState("info");
+  const [loadTime] = useState(() => Date.now());
+
+  // Load reCAPTCHA on mount
+  useEffect(() => { loadRecaptcha(); }, []);
+
+  // Dome login state
+  const [domeUser, setDomeUser] = useState(null);       // user info if logged in via Dome
+  const [domeToken, setDomeToken] = useState(null);     // token to pass with submission
+  const [loginMode, setLoginMode] = useState("new");    // "new" | "dome"
+  const [domeEmail, setDomeEmail] = useState("");
+  const [domePassword, setDomePassword] = useState("");
+  const [domeLoading, setDomeLoading] = useState(false);
+  const [domeError, setDomeError] = useState(null);
+
+  // Auto-login: check URL token first, then fall back to cookie
+  useEffect(() => {
+    const urlToken = searchParams.get("domeToken") || getDomeCookie();
+    if (!urlToken) return;
+    fetch(`${API}/dome-crossauth`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: urlToken }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ok && data.user) applyDomeUser(data.user, urlToken);
+        else clearDomeCookie(); // expired or invalid — wipe it silently
+      })
+      .catch(() => {});
+  }, []);
+
+  function applyDomeUser(user, token) {
+    setDomeUser(user);
+    setDomeToken(token);
+    setLoginMode("dome");
+    setForm({
+      firstName: user.first_name || "",
+      lastName:  user.last_name  || "",
+      email:     user.email      || "",
+      phone:     user.phone_number || "",
+      role:      "",
+    });
+    setDomeCookie(token);
+  }
+
+  async function handleDomeLogin() {
+    setDomeLoading(true);
+    setDomeError(null);
+    try {
+      const res = await fetch(`${API}/dome-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: domeEmail, password: domePassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed.");
+      applyDomeUser(data.user, data.token);
+    } catch (err) {
+      setDomeError(err.message);
+    } finally {
+      setDomeLoading(false);
+    }
+  }
+
+  // Step 1: contact info
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    role: "",
+  });
+
+  // Step 2: class selection
+  const [classes, setClasses] = useState([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [classError, setClassError] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  // Step 3: review
+  const [studentRebate, setStudentRebate] = useState(false);
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [squareLoading, setSquareLoading] = useState(false);
+  const [squareError, setSquareError] = useState(null);
+
+  // Validation errors
+  const [errors, setErrors] = useState({});
+
+  // Fetch classes when entering step 2
+  useEffect(() => {
+    if (step !== "classes" || classes.length > 0) return;
+    setLoadingClasses(true);
+    fetch(`${API}/classes`)
+      .then((r) => r.json())
+      .then((data) => {
+        // Only show upcoming / current classes
+        const today = new Date().toISOString().slice(0, 10);
+        setClasses(
+          data.filter((c) => {
+            if (!c.date) return true;
+            const lastDate = c.duration_weeks
+              ? new Date(
+                  new Date(c.date + "T12:00:00").getTime() +
+                    (c.duration_weeks - 1) * 7 * 86400000
+                )
+                  .toISOString()
+                  .slice(0, 10)
+              : c.date;
+            return lastDate >= today;
+          })
+        );
+      })
+      .catch(() => setClassError("Failed to load classes. Please refresh."))
+      .finally(() => setLoadingClasses(false));
+  }, [step]);
+
+  // Computed totals
+  const selectedClasses = classes.filter((c) => selectedIds.has(c.id));
+  const total = selectedClasses.reduce((sum, c) => {
+    const price = Number(c.price) || 0;
+    return sum + Math.max(0, price - (studentRebate ? REBATE_AMOUNT : 0));
+  }, 0);
+
+  function setField(key, val) {
+    setForm((p) => ({ ...p, [key]: val }));
+    if (errors[key]) setErrors((p) => ({ ...p, [key]: null }));
+  }
+
+  function validateInfo() {
+    const e = {};
+    if (!form.firstName.trim()) e.firstName = locale === "fr" ? "Requis" : "Required";
+    if (!form.lastName.trim()) e.lastName = locale === "fr" ? "Requis" : "Required";
+    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = locale === "fr" ? "Courriel invalide" : "Invalid email";
+    if (!form.role) e.role = locale === "fr" ? "Veuillez choisir un rôle" : "Please choose a role";
+    return e;
+  }
+
+  function goToClasses() {
+    const e = validateInfo();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setStep("classes");
+  }
+
+  function goToReview() {
+    if (selectedIds.size === 0) {
+      setClassError(locale === "fr" ? "Veuillez sélectionner au moins un cours." : "Please select at least one class.");
+      return;
+    }
+    setClassError(null);
+    setStep("review");
+  }
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    try {
+      const recaptchaToken = await getRecaptchaToken();
+      const res = await fetch(`${API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          honeypot: "",
+          elapsedMs: Date.now() - loadTime,
+          recaptchaToken,
+          domeToken: domeToken || null,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          role: form.role,
+          classIds: Array.from(selectedIds),
+          studentRebate,
+          note,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Submission failed.");
+      setSubmitResult(data);
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ submit: err.message });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function goToSquare(result) {
+    setSquareLoading(true);
+    setSquareError(null);
+    try {
+      const paidTotal = result.created.reduce((sum, r) => sum + (r.price || 0), 0);
+      const amountCents = Math.round(paidTotal * 100);
+      const referenceId = result.created.map((r) => r.invNumber || r.idinvoices).join(",");
+      const redirectUrl = `${window.location.origin}/${locale}/payment-thanks?ref=${encodeURIComponent(referenceId)}`;
+      const resp = await fetch(`${API}/square-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amountCents, referenceId, redirectUrl }),
+      });
+      const data = await resp.json();
+      if (data.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        setSquareError(locale === "fr" ? "Impossible de créer le lien de paiement." : "Could not create payment link.");
+        setSquareLoading(false);
+      }
+    } catch {
+      setSquareError(locale === "fr" ? "Erreur de connexion au système de paiement." : "Payment system connection error.");
+      setSquareLoading(false);
+    }
+  }
+
+  const roleLabels = {
+    lead: locale === "fr" ? "Lead" : "Lead",
+    follow: locale === "fr" ? "Follow" : "Follow",
+    versatile: locale === "fr" ? "Versatile" : "Versatile",
+  };
+
+  if (submitted) {
+    return (
+      <>
+        <PageHero
+          className="-mt-25"
+          imageSrc="/images/katya_zack.jpg"
+          imageAlt="SCX dancers"
+          bandColorVar="var(--color-scx-secondary)"
+          titleLines={locale === "fr" ? ["INSCRIPTION"] : ["REGISTRATION"]}
+        />
+        <section className="bg-scx-secondary text-white">
+          <Container>
+            <div className="py-16 max-w-xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-2xl font-bold mb-2">
+                  {locale === "fr" ? "Inscription reçue !" : "Registration received!"}
+                </h2>
+                <p className="text-white/70">
+                  {locale === "fr"
+                    ? `Merci ${form.firstName} ! Vous recevrez une confirmation par courriel.`
+                    : `Thanks ${form.firstName}! You'll receive a confirmation by email.`}
+                </p>
+              </div>
+
+              {/* Created registrations */}
+              {submitResult?.created?.length > 0 && (
+                <div className="rounded-2xl bg-white/5 border border-white/10 px-5 py-4 mb-4">
+                  <h3 className="text-xs uppercase tracking-wide text-white/50 font-semibold mb-3">
+                    {locale === "fr" ? "Inscriptions créées" : "Registrations created"}
+                  </h3>
+                  <div className="space-y-2">
+                    {submitResult.created.map((r) => {
+                      const cls = classes.find((c) => c.id === r.idclasses);
+                      const name = cls?.name?.[locale] || cls?.name?.fr || `Class #${r.idclasses}`;
+                      return (
+                        <div key={r.idregistrations} className="flex items-center justify-between text-sm">
+                          <span className="text-white">{name}</span>
+                          <span className="text-green-400 text-xs font-semibold">
+                            {locale === "fr" ? "✓ Confirmé" : "✓ Confirmed"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Skipped (already registered) */}
+              {submitResult?.skipped?.length > 0 && (
+                <div className="rounded-2xl bg-yellow-900/30 border border-yellow-500/20 px-5 py-4 mb-4">
+                  <h3 className="text-xs uppercase tracking-wide text-yellow-400/70 font-semibold mb-2">
+                    {locale === "fr" ? "Déjà inscrit·e" : "Already registered"}
+                  </h3>
+                  <div className="space-y-1">
+                    {submitResult.skipped.map((r) => {
+                      const cls = classes.find((c) => c.id === r.idclasses);
+                      const name = cls?.name?.[locale] || cls?.name?.fr || `Class #${r.idclasses}`;
+                      return (
+                        <p key={r.idclasses} className="text-sm text-yellow-200/70">{name}</p>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Square payment option */}
+              {submitResult?.created?.length > 0 &&
+                submitResult.created.reduce((sum, r) => sum + (r.price || 0), 0) > 0 && (
+                <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 px-5 py-5 text-center">
+                  <p className="text-sm text-white/70 mb-4">
+                    {locale === "fr"
+                      ? "Vous pouvez payer immédiatement par carte de crédit via Square :"
+                      : "You can pay right now by credit card via Square:"}
+                  </p>
+                  {squareError && <p className="text-red-400 text-xs mb-3">{squareError}</p>}
+                  <Button
+                    bgVar="var(--color-scx-primary)"
+                    fgVar="#fff"
+                    className="w-full justify-center"
+                    onClick={() => goToSquare(submitResult)}
+                    disabled={squareLoading}
+                  >
+                    {squareLoading ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Spinner size={14} />
+                        {locale === "fr" ? "Redirection…" : "Redirecting…"}
+                      </span>
+                    ) : (
+                      locale === "fr" ? "Payer par carte (Square) →" : "Pay by card (Square) →"
+                    )}
+                  </Button>
+                  <p className="text-xs text-white/40 mt-3">
+                    {locale === "fr"
+                      ? "Des frais de traitement peuvent s'appliquer."
+                      : "Processing fees may apply."}
+                  </p>
+                </div>
+              )}
+
+              <div className="text-center mt-4">
+                <a
+                  href="https://dome.swingconnexion.com/my-invoices"
+                  className="text-sm text-[var(--color-scx-primary)] hover:underline"
+                >
+                  {locale === "fr" ? "Voir mes factures sur Dome →" : "View my invoices on Dome →"}
+                </a>
+              </div>
+            </div>
+          </Container>
+        </section>
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <PageHero
+        className="-mt-25"
+        imageSrc="/images/katya_zack.jpg"
+        imageAlt="SCX dancers"
+        bandColorVar="var(--color-scx-secondary)"
+        titleLines={locale === "fr" ? ["INSCRIPTION"] : ["REGISTRATION"]}
+        description={
+          locale === "fr"
+            ? "Bienvenue, ou bienvenue à nouveau chez SCX !"
+            : "Welcome, or welcome back to SCX!"
+        }
+      />
+
+      <section className="bg-scx-secondary text-white">
+        <Container>
+          <div className="py-10 max-w-xl mx-auto">
+            <StepIndicator step={step} />
+
+            {/* ── Step 1: Your Info ── */}
+            {step === "info" && (
+              <div className="space-y-4">
+
+                {/* Dome login banner if auto-logged in from URL */}
+                {domeUser && (
+                  <div className="flex items-center gap-3 rounded-2xl bg-green-900/40 border border-green-500/30 px-4 py-3">
+                    <span className="text-green-400 text-lg">✓</span>
+                    <div className="flex-1 text-sm">
+                      <span className="text-green-300 font-semibold">
+                        {locale === "fr" ? "Connecté via Dome" : "Logged in via Dome"}
+                      </span>
+                      <span className="text-white/60 ml-2">
+                        {domeUser.first_name} {domeUser.last_name}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => { setDomeUser(null); setDomeToken(null); setLoginMode("new"); setForm({ firstName: "", lastName: "", email: "", phone: "", role: "" }); }}
+                      className="text-xs text-white/40 hover:text-white/70"
+                    >
+                      {locale === "fr" ? "Changer" : "Switch"}
+                    </button>
+                  </div>
+                )}
+
+                {/* Toggle: New / Dome account — only show if not already logged in */}
+                {!domeUser && (
+                  <div className="flex rounded-2xl overflow-hidden border border-white/15">
+                    {[["new", locale === "fr" ? "Nouveau·elle" : "New here"], ["dome", locale === "fr" ? "J'ai un compte Dome" : "I have a Dome account"]].map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => { setLoginMode(mode); setDomeError(null); }}
+                        className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${loginMode === mode ? "bg-white/15 text-white" : "text-white/45 hover:text-white/70"}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Dome login form */}
+                {!domeUser && loginMode === "dome" && (
+                  <div className="space-y-3 rounded-2xl bg-white/5 border border-white/10 px-4 py-4">
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">Email</label>
+                      <input
+                        type="email"
+                        value={domeEmail}
+                        onChange={(e) => setDomeEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleDomeLogin()}
+                        className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30"
+                        placeholder="you@example.com"
+                        autoComplete="email"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
+                        {locale === "fr" ? "Mot de passe" : "Password"}
+                      </label>
+                      <input
+                        type="password"
+                        value={domePassword}
+                        onChange={(e) => setDomePassword(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleDomeLogin()}
+                        className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30"
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    {domeError && <p className="text-red-400 text-xs">{domeError}</p>}
+                    <Button
+                      bgVar="var(--color-scx-primary)"
+                      fgVar="#fff"
+                      className="w-full"
+                      onClick={handleDomeLogin}
+                      disabled={domeLoading}
+                    >
+                      {domeLoading
+                        ? <span className="inline-flex items-center gap-2"><Spinner size={14} />{locale === "fr" ? "Connexion…" : "Signing in…"}</span>
+                        : locale === "fr" ? "Se connecter" : "Sign in"
+                      }
+                    </Button>
+                  </div>
+                )}
+
+                {/* Contact fields — shown for "new" mode, or when logged in via Dome (prefilled + editable) */}
+                {(loginMode === "new" || domeUser) && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
+                          {locale === "fr" ? "Prénom" : "First name"} *
+                        </label>
+                        <input
+                          value={form.firstName}
+                          onChange={(e) => setField("firstName", e.target.value)}
+                          className={`w-full rounded-2xl bg-white/10 border px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30 ${errors.firstName ? "border-red-400" : "border-white/15"}`}
+                          placeholder={locale === "fr" ? "Prénom" : "First name"}
+                        />
+                        {errors.firstName && <p className="mt-1 text-xs text-red-400">{errors.firstName}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
+                          {locale === "fr" ? "Nom" : "Last name"} *
+                        </label>
+                        <input
+                          value={form.lastName}
+                          onChange={(e) => setField("lastName", e.target.value)}
+                          className={`w-full rounded-2xl bg-white/10 border px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30 ${errors.lastName ? "border-red-400" : "border-white/15"}`}
+                          placeholder={locale === "fr" ? "Nom" : "Last name"}
+                        />
+                        {errors.lastName && <p className="mt-1 text-xs text-red-400">{errors.lastName}</p>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">Email *</label>
+                      <input
+                        type="email"
+                        value={form.email}
+                        onChange={(e) => setField("email", e.target.value)}
+                        className={`w-full rounded-2xl bg-white/10 border px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30 ${errors.email ? "border-red-400" : "border-white/15"}`}
+                        placeholder="you@example.com"
+                      />
+                      {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
+                        {locale === "fr" ? "Téléphone" : "Phone"}
+                      </label>
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => setField("phone", e.target.value)}
+                        className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30"
+                        placeholder="514-555-0100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-2">
+                        {locale === "fr" ? "Rôle" : "Role"} *
+                      </label>
+                      <div className="flex gap-3">
+                        {["lead", "follow", "versatile"].map((r) => (
+                          <RoleButton key={r} value={r} selected={form.role === r} onClick={() => setField("role", r)}>
+                            {roleLabels[r]}
+                          </RoleButton>
+                        ))}
+                      </div>
+                      {errors.role && <p className="mt-1.5 text-xs text-red-400">{errors.role}</p>}
+                    </div>
+
+                    <div className="pt-2">
+                      <Button bgVar="var(--color-scx-primary)" fgVar="#fff" className="w-full justify-center" onClick={goToClasses}>
+                        {locale === "fr" ? "Choisir mes cours →" : "Choose classes →"}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ── Step 2: Choose Classes ── */}
+            {step === "classes" && (
+              <div>
+                <p className="text-white/70 text-sm mb-5">
+                  {locale === "fr"
+                    ? "Sélectionnez un ou plusieurs cours."
+                    : "Select one or more classes."}
+                </p>
+
+                {loadingClasses && (
+                  <div className="flex justify-center py-12">
+                    <Spinner size={32} />
+                  </div>
+                )}
+
+                {!loadingClasses && classes.length === 0 && !classError && (
+                  <p className="text-white/50 text-sm text-center py-8">
+                    {locale === "fr"
+                      ? "Aucun cours disponible pour le moment."
+                      : "No classes available at the moment."}
+                  </p>
+                )}
+
+                {classError && (
+                  <p className="text-red-400 text-sm mb-4">{classError}</p>
+                )}
+
+                <div className="space-y-3">
+                  {classes.map((cls) => (
+                    <ClassCard
+                      key={cls.id}
+                      cls={cls}
+                      selected={selectedIds.has(cls.id)}
+                      lang={locale}
+                      onToggle={() => {
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          next.has(cls.id) ? next.delete(cls.id) : next.add(cls.id);
+                          return next;
+                        });
+                        setClassError(null);
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    bgVar="transparent"
+                    fgVar="#fff"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setStep("info")}
+                  >
+                    ← {locale === "fr" ? "Retour" : "Back"}
+                  </Button>
+                  <Button
+                    bgVar="var(--color-scx-primary)"
+                    fgVar="#fff"
+                    className="flex-1"
+                    onClick={goToReview}
+                  >
+                    {locale === "fr" ? "Continuer →" : "Continue →"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Step 3: Review & Submit ── */}
+            {step === "review" && (
+              <div className="space-y-6">
+                {/* Contact summary */}
+                <div className="rounded-2xl bg-white/5 border border-white/10 px-5 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs uppercase tracking-wide text-white/60 font-semibold">
+                      {locale === "fr" ? "Vos informations" : "Your info"}
+                    </h3>
+                    <button
+                      onClick={() => setStep("info")}
+                      className="text-xs text-[var(--color-scx-primary)] hover:underline"
+                    >
+                      {locale === "fr" ? "Modifier" : "Edit"}
+                    </button>
+                  </div>
+                  <p className="text-white font-semibold">{form.firstName} {form.lastName}</p>
+                  <p className="text-white/70 text-sm">{form.email}</p>
+                  {form.phone && <p className="text-white/70 text-sm">{form.phone}</p>}
+                  <p className="text-white/70 text-sm capitalize mt-1">
+                    {locale === "fr" ? "Rôle : " : "Role: "}{form.role}
+                  </p>
+                </div>
+
+                {/* Selected classes */}
+                <div className="rounded-2xl bg-white/5 border border-white/10 px-5 py-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs uppercase tracking-wide text-white/60 font-semibold">
+                      {locale === "fr" ? "Cours sélectionnés" : "Selected classes"}
+                    </h3>
+                    <button
+                      onClick={() => setStep("classes")}
+                      className="text-xs text-[var(--color-scx-primary)] hover:underline"
+                    >
+                      {locale === "fr" ? "Modifier" : "Edit"}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedClasses.map((cls) => {
+                      const name = cls.name?.[locale] || cls.name?.fr || "";
+                      const price = Number(cls.price) || 0;
+                      const afterRebate = Math.max(0, price - (studentRebate ? REBATE_AMOUNT : 0));
+                      return (
+                        <div key={cls.id} className="flex justify-between items-center text-sm">
+                          <span className="text-white">{name}</span>
+                          <span className="text-white/80 font-semibold">
+                            {studentRebate && REBATE_AMOUNT > 0 && price !== afterRebate ? (
+                              <>
+                                <span className="line-through text-white/40 mr-2">${price.toFixed(2)}</span>
+                                ${afterRebate.toFixed(2)}
+                              </>
+                            ) : (
+                              `$${price.toFixed(2)}`
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Student rebate */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={studentRebate}
+                    onChange={(e) => setStudentRebate(e.target.checked)}
+                    className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                  />
+                  <div>
+                    <span className="text-sm text-white font-medium">
+                      {locale === "fr" ? "Rabais étudiant (-$40 / cours)" : "Student rebate (-$40 / class)"}
+                    </span>
+                    <p className="text-xs text-white/50 mt-0.5">
+                      {locale === "fr"
+                        ? "Pour les étudiant·e·s à temps plein. Jamais sous $0."
+                        : "For full-time students. Never below $0."}
+                    </p>
+                  </div>
+                </label>
+
+                {/* Note */}
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
+                    {locale === "fr" ? "Message (optionnel)" : "Message (optional)"}
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full rounded-2xl bg-white/10 border border-white/15 px-4 py-3 text-white placeholder-white/40 outline-none focus:ring-2 focus:ring-white/30 resize-none"
+                    placeholder={locale === "fr" ? "Questions, commentaires…" : "Questions, comments…"}
+                  />
+                </div>
+
+                {/* Total */}
+                <div className="rounded-2xl bg-[var(--color-scx-primary)]/20 border border-[var(--color-scx-primary)]/40 px-5 py-4 flex items-center justify-between">
+                  <span className="font-bold text-white">
+                    {locale === "fr" ? "Total" : "Total"}
+                  </span>
+                  <span className="text-2xl font-extrabold text-white">
+                    ${total.toFixed(2)} <span className="text-sm font-normal text-white/60">CAD</span>
+                  </span>
+                </div>
+
+                {/* Honeypot — hidden from humans, bots fill it */}
+                <input
+                  type="text"
+                  name="website"
+                  value=""
+                  onChange={() => {}}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                />
+
+                {errors.submit && (
+                  <p className="text-red-400 text-sm text-center">{errors.submit}</p>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    bgVar="transparent"
+                    fgVar="#fff"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setStep("classes")}
+                  >
+                    ← {locale === "fr" ? "Retour" : "Back"}
+                  </Button>
+                  <Button
+                    bgVar="var(--color-scx-primary)"
+                    fgVar="#fff"
+                    className="flex-1"
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                  >
+                    {submitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Spinner size={16} />
+                        {locale === "fr" ? "Envoi…" : "Sending…"}
+                      </span>
+                    ) : (
+                      locale === "fr" ? "Envoyer →" : "Submit →"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Container>
+      </section>
+
+      <Footer />
+    </>
+  );
+}

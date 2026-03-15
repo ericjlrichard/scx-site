@@ -11,7 +11,10 @@ import Privates from "./pages/Privates";
 import Contact from "./pages/Contact";
 import Staff from "./pages/Staff";
 import Registration from "./pages/Registration";
+import SignUp from "./pages/SignUp";
 import Payment from "./pages/Payment";
+import Troupes from "./pages/Troupes";
+import PaymentThanks from "./pages/PaymentThanks";
 import NotFound from "./pages/NotFound";
 import { PopupProvider } from "./components/Popup";
 
@@ -30,7 +33,10 @@ const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
       { path: "register", element: <Registration /> },
+      { path: "signup", element: <SignUp /> },
       { path: "payment", element: <Payment /> },
+      { path: "payment-thanks", element: <PaymentThanks /> },
+      { path: "troupes", element: <Troupes /> },
 
       // 404 for any other /... path
       { path: "*", element: <NotFound /> },
@@ -51,7 +57,10 @@ const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
       { path: "register", element: <Registration /> },
+      { path: "signup", element: <SignUp /> },
       { path: "payment", element: <Payment /> },
+      { path: "payment-thanks", element: <PaymentThanks /> },
+      { path: "troupes", element: <Troupes /> },
 
       // 404 for any other /:lang/... path
       { path: "*", element: <NotFound /> },
