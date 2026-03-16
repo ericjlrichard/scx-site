@@ -1,6 +1,9 @@
 // src/components/Button.jsx
+import { Link } from "react-router-dom";
+
 export default function Button({
   href,
+  to,
   children,
   variant = "solid", // "solid" | "outline"
   bgVar = "var(--color-scx-primary)", // pass a var from index.css
@@ -20,6 +23,7 @@ export default function Button({
   } ${className}`;
   const style = { "--btn-bg": bgVar, "--btn-fg": fgVar };
 
+  if (to) return <Link to={to} className={classes} style={style} {...props}>{children}</Link>;
   const Comp = href ? "a" : "button";
   return (
     <Comp href={href} className={classes} style={style} {...props}>

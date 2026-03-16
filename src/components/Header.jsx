@@ -52,6 +52,10 @@ export default function Header() {
           label: t("nav.privateLessons", "Private Lessons"),
           to: `${prefix}/privatelessons`,
         },
+        {
+          label: t("nav.troupes", "Troupes"),
+          to: `${prefix}/troupes`,
+        },
       ],
     },
 
@@ -61,7 +65,15 @@ export default function Header() {
       to: `${prefix}/mercredisswing`,
     },
 
-    { key: "staff", label: t("nav.staff", "Our Staff"), to: `${prefix}/staff` },
+    {
+      key: "staff",
+      label: t("nav.staff", "Our Staff"),
+      to: `${prefix}/staff`,
+      submenu: [
+        { label: t("nav.staff", "Our Staff"), to: `${prefix}/staff` },
+        { label: t("nav.codeOfConduct", "Code of Conduct"), to: `${prefix}/codeofconduct` },
+      ],
+    },
 
     {
       key: "contact",
@@ -72,7 +84,7 @@ export default function Header() {
     {
       key: "register",
       label: t("nav.register", "Register"),
-      to: `https://swingconnexion.square.site/shop/classes-session-mars-2026/6GONSQ6TUDB6OHUFPX6CMYY5?page=1&limit=30&sort_by=category_order&sort_order=asc`,
+      to: `${prefix}/signup`,
     },
 
     {

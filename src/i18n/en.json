@@ -50,6 +50,12 @@
     "desc": "Meet the teachers, artists, and mentors of Swing ConneXion.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "SwingConnexion, swing teachers Montreal, dance instructors, lindy hop Montreal"
+  },
+  "troupes": {
+    "title": "Troupes — Swing ConneXion",
+    "desc": "Discover the performance troupes of Swing ConneXion in Montreal.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, swing troupes, performance dance Montreal, lindy hop"
   }
 },
 
@@ -64,7 +70,9 @@
     "introClasses": "Weekly Intro Class",
     "privateLessons": "Private Lessons",
     "staff": "Our Staff",
-    "register": "Register"
+    "codeOfConduct": "Code of Conduct",
+    "register": "Register",
+    "troupes": "Troupes"
   },
 
   "common": {

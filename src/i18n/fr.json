@@ -52,6 +52,12 @@
     "desc": "Découvrez les professeurs, artistes et mentors de Swing ConneXion.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "SwingConnexion, enseignants swing Montréal, prof danse, lindy hop Montréal"
+  },
+  "troupes": {
+    "title": "Troupes — Swing ConneXion",
+    "desc": "Découvrez les troupes de performance de Swing ConneXion à Montréal.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "SwingConnexion, troupes swing, performance danse Montréal, lindy hop"
   }
 },
 
@@ -66,7 +72,9 @@
     "introClasses": "Cours d'essai",
     "privateLessons": "Cours privés",
     "staff": "Notre équipe",
-    "register": "S'inscrire"
+    "codeOfConduct": "Code de conduite",
+    "register": "S'inscrire",
+    "troupes": "Troupes"
   },
 
   "common": {

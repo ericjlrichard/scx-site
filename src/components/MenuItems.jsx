@@ -28,6 +28,11 @@ export default function MenuItems({
           to: `${prefix}/privatelessons`,
           label: t("nav.privateLessons"),
         },
+        {
+          kind: "link",
+          to: `${prefix}/troupes`,
+          label: t("nav.troupes"),
+        },
       ],
     },
     {
@@ -36,14 +41,17 @@ export default function MenuItems({
       label: t("nav.tickets"),
       newTab: true,
     },
-    { kind: "link", to: `${prefix}/staff`, label: t("nav.staff") },
+    {
+      kind: "menu",
+      label: t("nav.staff"),
+      children: [
+        { kind: "link", to: `${prefix}/staff`, label: t("nav.staff") },
+        { kind: "link", to: `${prefix}/codeofconduct`, label: t("nav.codeOfConduct") },
+      ],
+    },
     { kind: "link", to: `${prefix}/contact`, label: t("nav.contact") },
 
-    {
-      kind: "link",
-      to: `https://swingconnexion.square.site/shop/classes-session-novembre-2025/ERQ2J5PWONLPD6EWYBAUS7JI`,
-      label: t("nav.register"),
-    },
+    { kind: "link", to: `${prefix}/signup`, label: t("nav.register") },
   ];
 
   const toggle = (label) => {

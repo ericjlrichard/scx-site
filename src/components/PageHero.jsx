@@ -97,6 +97,7 @@ export default function PageHero({
                         <Button
                           key={i}
                           href={a.href}
+                          to={a.to}
                           bgVar={a.bgVar}
                           fgVar={a.fgVar}
                           variant={a.variant || "solid"}

@@ -23,10 +23,7 @@ export default function Hero() {
               permettre à n’importe qui d’apprendre facilement les danses swing.
             </p>
             <div className="mt-4 flex gap-3">
-              <Button
-                href="https://swingconnexion.square.site/shop/classes-session-novembre-2025/ERQ2J5PWONLPD6EWYBAUS7JI"
-                variant="primary"
-              >
+              <Button to="/signup" variant="primary">
                 Réserver un cours
               </Button>
               <Button href="https://swingconnexion.square.site/shop/billets-show-20e-anniversaire/RZKZGYZIMSAODGZPP3WN32ER">

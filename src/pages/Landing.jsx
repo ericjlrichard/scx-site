@@ -41,7 +41,7 @@ export default function Landing() {
 
               <div className="mt-4 flex justify-center">
                 <Button
-                  href={`https://swingconnexion.square.site/shop/classes-session-mars-2026/6GONSQ6TUDB6OHUFPX6CMYY5?page=1&limit=30&sort_by=category_order&sort_order=asc&location_id=11f086cdeef7b9d6bd003cecef6d615a`}
+                  to={`${prefix}/signup`}
                   bgVar="var(--color-scx-secondary)"
                   fgVar="#fff"
                 >

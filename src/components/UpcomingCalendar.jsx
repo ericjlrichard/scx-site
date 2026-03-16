@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useI18n } from "../i18n/useI18n";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 
 const DAY_LABELS = {
   en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -81,6 +81,38 @@ function buildEvents(apiClasses, lang) {
     .filter((e) => e.dayIndex >= 0 && !!e.timeKey);
 }
 
+function buildTroupeEvents(troupes, lang) {
+  // Find the next occurrence of a given day-of-week from today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return troupes
+    .filter((t) => t.start_date && t.time)
+    .map((t) => {
+      const startD = new Date(t.start_date);
+      const dow = startD.getUTCDay(); // day of week from start_date
+
+      // Find the upcoming date for this weekday
+      const diff = (dow - today.getDay() + 7) % 7;
+      const upcoming = new Date(today);
+      upcoming.setDate(today.getDate() + diff);
+      const dateKey = toLocalDateKey(upcoming);
+
+      const name = (lang === "fr" ? t.name_fr : t.name_en) || t.name_en || "";
+      return {
+        id: `troupe-${t.idtroupes}`,
+        dayIndex: dow,
+        timeKey: timeToKey(t.time),
+        name,
+        shortName: shortTitle(name),
+        desc: (lang === "fr" ? t.desc_fr : t.desc_en) || "",
+        startDate: dateKey,
+        isTroupe: true,
+      };
+    })
+    .filter((e) => e.dayIndex >= 0 && !!e.timeKey);
+}
+
 function groupByDay(events) {
   const byDay = Array.from({ length: 7 }, () => []);
   for (const e of events) byDay[e.dayIndex].push(e);
@@ -96,17 +128,23 @@ export default function UpcomingCalendar() {
   const lang = langParam === "fr" ? "fr" : "en";
 
   const [apiClasses, setApiClasses] = useState([]);
+  const [apiTroupes, setApiTroupes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://api.swingconnexion.ca/public/classes")
-      .then((r) => r.json())
-      .then((data) => setApiClasses(Array.isArray(data) ? data : []))
-      .catch(() => setApiClasses([]))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch("https://api.swingconnexion.ca/public/classes").then((r) => r.json()).catch(() => []),
+      fetch("https://api.swingconnexion.ca/public/troupes").then((r) => r.json()).catch(() => []),
+    ]).then(([classes, troupes]) => {
+      setApiClasses(Array.isArray(classes) ? classes : []);
+      setApiTroupes(Array.isArray(troupes) ? troupes : []);
+      setLoading(false);
+    });
   }, []);
 
-  const events = buildEvents(apiClasses, lang);
+  const classEvents = buildEvents(apiClasses, lang);
+  const troupeEvents = buildTroupeEvents(apiTroupes, lang);
+  const events = [...classEvents, ...troupeEvents];
   const byDay = groupByDay(events);
   const dayLabels = DAY_LABELS[lang];
 
@@ -123,7 +161,13 @@ export default function UpcomingCalendar() {
       ? "Aucun cours à venir pour le moment."
       : "No upcoming classes at the moment.";
 
-  const CardWrapper = ({ href, className, style, title, children }) => {
+  const troupesPath = langParam ? `/${langParam}/troupes` : "/troupes";
+  const signupPath = (id) => (langParam ? `/${langParam}/signup` : "/signup") + `?class=${id}`;
+
+  const CardWrapper = ({ href, to, className, style, title, children }) => {
+    if (to) {
+      return <Link to={to} className={className} style={style} title={title}>{children}</Link>;
+    }
     if (href) {
       return (
         <a href={href} target="_blank" rel="noopener noreferrer"
@@ -173,22 +217,20 @@ export default function UpcomingCalendar() {
                     </div>
                     <div className="mt-3 space-y-2">
                       {dayEvents.map((e) => (
-                        <CardWrapper key={e.id} href={e.link}
-                          className={`grid grid-cols-[1fr_auto] items-start gap-x-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-colors
-                            ${e.link ? "cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30" : ""}`}
-                          style={{ boxShadow: "inset 4px 0 0 0 var(--color-scx-primary)" }}
+                        <CardWrapper key={e.id}
+                          href={undefined}
+                          to={e.isTroupe ? troupesPath : signupPath(e.id)}
+                          className={`grid grid-cols-[1fr_auto] items-start gap-x-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
+                          style={{ boxShadow: e.isTroupe ? "inset 4px 0 0 0 var(--color-scx-accent)" : "inset 4px 0 0 0 var(--color-scx-primary)" }}
                           title={e.desc || e.name}>
                           <div className="min-w-0 text-left">
                             <div className="text-base font-semibold leading-tight truncate">{e.shortName}</div>
                             <div className="mt-0.5 text-sm text-white/60">
-                              {uiStartsLabel} {formatHumanDate(e.startDate, lang)}
+                              {fmtTimeLabel(e.timeKey)}
                             </div>
                             {e.desc ? (
                               <div className="mt-1 text-sm text-white/70 line-clamp-2">{e.desc}</div>
                             ) : null}
-                          </div>
-                          <div className="text-base text-white/90 tabular-nums pt-0.5">
-                            {fmtTimeLabel(e.timeKey)}
                           </div>
                         </CardWrapper>
                       ))}
@@ -230,15 +272,18 @@ export default function UpcomingCalendar() {
                           {items.length ? (
                             <div className="flex flex-col gap-2">
                               {items.map((e) => (
-                                <CardWrapper key={e.id} href={e.link}
-                                  className={`rounded-xl border border-white/10 px-3 py-2 bg-white/5 transition-colors
-                                    ${e.link ? "cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30" : ""}`}
-                                  style={{ boxShadow: "inset 4px 0 0 0 var(--color-scx-primary)" }}
+                                <CardWrapper key={e.id}
+                                  href={undefined}
+                                  to={e.isTroupe ? troupesPath : signupPath(e.id)}
+                                  className={`rounded-xl border border-white/10 px-3 py-2 bg-white/5 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
+                                  style={{ boxShadow: e.isTroupe ? "inset 4px 0 0 0 var(--color-scx-accent)" : "inset 4px 0 0 0 var(--color-scx-primary)" }}
                                   title={e.desc || e.name}>
                                   <div className="text-sm font-semibold leading-tight text-white">{e.shortName}</div>
-                                  <div className="text-xs text-white/70 mt-0.5">
-                                    {uiStartsLabel} {formatHumanDate(e.startDate, lang)}
-                                  </div>
+                                  {!e.isTroupe && (
+                                    <div className="text-xs text-white/70 mt-0.5">
+                                      {uiStartsLabel} {formatHumanDate(e.startDate, lang)}
+                                    </div>
+                                  )}
                                 </CardWrapper>
                               ))}
                             </div>

@@ -108,12 +108,18 @@ function RoleButton({ value, selected, onClick, children }) {
   );
 }
 
+const DESC_LIMIT = 100;
+
 function ClassCard({ cls, selected, onToggle, lang }) {
+  const [descExpanded, setDescExpanded] = useState(false);
   const name = cls.name?.[lang] || cls.name?.fr || "";
   const desc = cls.desc?.[lang] || cls.desc?.fr || "";
   const teachers = Array.isArray(cls.teachers)
     ? cls.teachers.map((t) => t.first_name).join(", ")
     : "";
+  const descTruncated = desc.length > DESC_LIMIT && !descExpanded
+    ? desc.slice(0, DESC_LIMIT).trimEnd() + "…"
+    : desc;
 
   const dayStr = cls.date
     ? new Date(cls.date + "T12:00:00").toLocaleDateString(
@@ -149,7 +155,18 @@ function ClassCard({ cls, selected, onToggle, lang }) {
             <h3 className="font-bold text-white text-[15px]">{name}</h3>
           </div>
           {desc && (
-            <p className="mt-1 ml-7 text-sm text-white/65 leading-snug">{desc}</p>
+            <p className="mt-1 ml-7 text-sm text-white/65 leading-snug">
+              {descTruncated}
+              {desc.length > DESC_LIMIT && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setDescExpanded((v) => !v); }}
+                  className="ml-1 text-white/40 hover:text-white/70 text-xs"
+                >
+                  {descExpanded ? "▲" : "▼"}
+                </button>
+              )}
+            </p>
           )}
           <div className="mt-2 ml-7 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/60">
             {dayStr && <span>📅 {dayStr}</span>}
@@ -264,6 +281,12 @@ export default function SignUp() {
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareError, setSquareError] = useState(null);
 
+  // Mercredis Swing mode
+  const [mercredisSwing, setMercredisSwing] = useState(false);
+  useEffect(() => {
+    fetch(`${API}/mercredi-swing`).then((r) => r.json()).then((d) => setMercredisSwing(!!d.active)).catch(() => {});
+  }, []);
+
   // Promo codes (multiple can stack)
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromos, setAppliedPromos] = useState([]);
@@ -282,8 +305,7 @@ export default function SignUp() {
       .then((data) => {
         // Only show upcoming / current classes
         const today = new Date().toISOString().slice(0, 10);
-        setClasses(
-          data.filter((c) => {
+        const filtered = data.filter((c) => {
             if (!c.date) return true;
             const lastDate = c.duration_weeks
               ? new Date(
@@ -294,8 +316,22 @@ export default function SignUp() {
                   .slice(0, 10)
               : c.date;
             return lastDate >= today;
-          })
-        );
+          });
+        filtered.sort((a, b) => {
+          const aSwing1 = (a.name?.fr || a.name?.en || "").startsWith("Swing 1");
+          const bSwing1 = (b.name?.fr || b.name?.en || "").startsWith("Swing 1");
+          if (aSwing1 && !bSwing1) return -1;
+          if (!aSwing1 && bSwing1) return 1;
+          return 0;
+        });
+        setClasses(filtered);
+        const preselect = searchParams.get("class");
+        if (preselect) {
+          const id = Number(preselect);
+          if (filtered.some((c) => c.id === id)) {
+            setSelectedIds((prev) => new Set([...prev, id]));
+          }
+        }
       })
       .catch(() => setClassError("Failed to load classes. Please refresh."))
       .finally(() => setLoadingClasses(false));
@@ -303,6 +339,13 @@ export default function SignUp() {
 
   // Computed totals
   const selectedClasses = classes.filter((c) => selectedIds.has(c.id));
+
+  function getMercredisDiscount(cls) {
+    if (!mercredisSwing) return 0;
+    const name = cls.name?.fr || cls.name?.en || "";
+    if (!name.includes("Swing 1")) return 0;
+    return Math.min(20, Number(cls.price) || 0);
+  }
 
   function getPromoDiscount(cls) {
     if (!appliedPromos.length) return 0;
@@ -322,7 +365,8 @@ export default function SignUp() {
     const price = Number(c.price) || 0;
     const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
     const promo = getPromoDiscount(c);
-    return sum + Math.max(0, price - rebate - promo);
+    const mercredi = getMercredisDiscount(c);
+    return sum + Math.max(0, price - rebate - promo - mercredi);
   }, 0);
 
   function setField(key, val) {
@@ -581,6 +625,14 @@ export default function SignUp() {
         <Container>
           <div className="py-10 max-w-xl mx-auto">
             <StepIndicator step={step} />
+
+            {mercredisSwing && (
+              <div className="mb-6 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-300 text-center font-medium">
+                🎉 {locale === "fr"
+                  ? "Soirée Mercredis Swing — $20 de rabais sur les cours Swing 1 !"
+                  : "Mercredis Swing Night — $20 off Swing 1 classes!"}
+              </div>
+            )}
 
             {/* ── Step 1: Your Info ── */}
             {step === "info" && (
@@ -858,7 +910,8 @@ export default function SignUp() {
                       const price = Number(cls.price) || 0;
                       const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
                       const promo = getPromoDiscount(cls);
-                      const final = Math.max(0, price - rebate - promo);
+                      const mercredi = getMercredisDiscount(cls);
+                      const final = Math.max(0, price - rebate - promo - mercredi);
                       const hasDiscount = price !== final;
                       return (
                         <div key={cls.id} className="flex justify-between items-center text-sm">

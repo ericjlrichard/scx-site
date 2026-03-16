@@ -28,7 +28,7 @@ export default function GroupClasses() {
         }
         actions={[
           {
-            href: "https://swingconnexion.square.site/shop/classes-session-janvier-2026/3H7YBEB7DH34XAWK26246HDP",
+            to: `${prefix}/signup`,
             label:
               hero.ctaReserve ||
               t("common.buttons.reserve", "Réserver un cours"),
