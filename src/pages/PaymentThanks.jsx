@@ -55,6 +55,8 @@ export default function PaymentThanks() {
 
   return (
     <>
+      <title>Payment Confirmed — Swing ConneXion</title>
+      <meta name="robots" content="noindex,nofollow" />
       <PageHero
         className="-mt-25"
         imageSrc="/images/katya_zack.jpg"

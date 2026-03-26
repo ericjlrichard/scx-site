@@ -110,7 +110,20 @@ function RoleButton({ value, selected, onClick, children }) {
 
 const DESC_LIMIT = 100;
 
-function ClassCard({ cls, selected, onToggle, lang }) {
+function getWeekDates(cls) {
+  if (!cls.date || !cls.duration_weeks) return [];
+  const today = new Date().toISOString().slice(0, 10);
+  const dates = [];
+  const start = new Date(cls.date + "T12:00:00");
+  for (let i = 0; i < cls.duration_weeks; i++) {
+    const d = new Date(start.getTime() + i * 7 * 86400000);
+    const dateStr = d.toISOString().slice(0, 10);
+    if (dateStr >= today) dates.push(dateStr);
+  }
+  return dates;
+}
+
+function ClassCard({ cls, selected, onToggle, lang, dropinWeeks = [], onDropinToggle }) {
   const [descExpanded, setDescExpanded] = useState(false);
   const name = cls.name?.[lang] || cls.name?.fr || "";
   const desc = cls.desc?.[lang] || cls.desc?.fr || "";
@@ -129,60 +142,144 @@ function ClassCard({ cls, selected, onToggle, lang }) {
     : "";
 
   const price = Number(cls.price) || 0;
+  const rebate = Number(cls.rebate) || 0;
+  const finalPrice = Math.max(0, price - rebate);
+  const dropinPrice = Number(cls.dropin_price) || 0;
+  const isDropin = !!cls.is_dropin;
+  const weekDates = isDropin ? getWeekDates(cls) : [];
+  const isActive = selected || dropinWeeks.length > 0;
 
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`w-full text-left rounded-2xl border px-5 py-4 transition-all ${
-        selected
-          ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
-          : "border-white/15 bg-white/5 hover:bg-white/10"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-                selected
-                  ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]"
-                  : "border-white/40"
-              }`}
-            >
-              {selected && <span className="text-white text-xs">✓</span>}
-            </span>
-            <h3 className="font-bold text-white text-[15px]">{name}</h3>
-          </div>
-          {desc && (
-            <p className="mt-1 ml-7 text-sm text-white/65 leading-snug">
-              {descTruncated}
-              {desc.length > DESC_LIMIT && (
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setDescExpanded((v) => !v); }}
-                  className="ml-1 text-white/40 hover:text-white/70 text-xs"
-                >
-                  {descExpanded ? "▲" : "▼"}
-                </button>
-              )}
-            </p>
-          )}
-          <div className="mt-2 ml-7 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/60">
-            {dayStr && <span>📅 {dayStr}</span>}
-            {cls.time && <span>🕐 {cls.time.slice(0, 5)}</span>}
-            {teachers && <span>👤 {teachers}</span>}
-            {cls.duration_weeks && <span>📆 {cls.duration_weeks} weeks</span>}
-          </div>
-        </div>
-        <div className="flex-shrink-0 text-right">
-          <span className="font-bold text-white text-lg">
-            ${price.toFixed(2)}
+  const cardBody = (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span
+            className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+              isActive
+                ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]"
+                : "border-white/40"
+            }`}
+          >
+            {isActive && <span className="text-white text-xs">✓</span>}
           </span>
-          <div className="text-xs text-white/50">CAD</div>
+          <h3 className="font-bold text-white text-[15px]">{name}</h3>
+        </div>
+        {desc && (
+          <p className="mt-1 ml-7 text-sm text-white/65 leading-snug">
+            {descTruncated}
+            {desc.length > DESC_LIMIT && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setDescExpanded((v) => !v); }}
+                className="ml-1 text-white/40 hover:text-white/70 text-xs"
+              >
+                {descExpanded ? "▲" : "▼"}
+              </button>
+            )}
+          </p>
+        )}
+        <div className="mt-2 ml-7 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/60">
+          {dayStr && <span>📅 {dayStr}</span>}
+          {cls.time && <span>🕐 {cls.time.slice(0, 5)}</span>}
+          {teachers && <span>👤 {teachers}</span>}
+          {cls.duration_weeks && <span>📆 {cls.duration_weeks} weeks</span>}
         </div>
       </div>
-    </button>
+      <div className="flex-shrink-0 text-right">
+        {rebate > 0 && (
+          <div className="text-sm text-white/40 line-through">${price.toFixed(2)}</div>
+        )}
+        <span className="font-bold text-white text-lg">
+          ${finalPrice.toFixed(2)}
+        </span>
+        <div className="text-xs text-white/50">CAD</div>
+      </div>
+    </div>
+  );
+
+  if (!isDropin) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`w-full text-left rounded-2xl border px-5 py-4 transition-all ${
+          selected
+            ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
+            : "border-white/15 bg-white/5 hover:bg-white/10"
+        }`}
+      >
+        {cardBody}
+      </button>
+    );
+  }
+
+  // Drop-in enabled: show full-class + per-week options
+  return (
+    <div className={`rounded-2xl border px-5 py-4 transition-all ${
+      isActive
+        ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
+        : "border-white/15 bg-white/5"
+    }`}>
+      {cardBody}
+
+      <div className="mt-4 ml-7 space-y-2">
+        {/* Full class option */}
+        <button
+          type="button"
+          onClick={onToggle}
+          className={`w-full flex items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
+            selected
+              ? "bg-[var(--color-scx-primary)]/30 border border-[var(--color-scx-primary)]"
+              : "bg-white/5 border border-white/10 hover:bg-white/10"
+          }`}
+        >
+          <span className="font-medium">
+            {lang === "fr" ? "Cours complet" : "Full class"} ({cls.duration_weeks} {lang === "fr" ? "semaines" : "weeks"})
+          </span>
+          <span className="font-bold">${finalPrice.toFixed(2)}</span>
+        </button>
+
+        {/* Drop-in option */}
+        <div className={`rounded-xl border px-4 py-2.5 transition-all ${
+          dropinWeeks.length > 0
+            ? "bg-[var(--color-scx-primary)]/30 border-[var(--color-scx-primary)]"
+            : "bg-white/5 border-white/10"
+        }`}>
+          <div className="flex items-center justify-between text-sm mb-2">
+            <span className="font-medium">{lang === "fr" ? "À la carte" : "Drop-in"}</span>
+            <span className="text-white/60">${dropinPrice.toFixed(2)} / {lang === "fr" ? "sem." : "week"}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {weekDates.map((date) => {
+              const checked = dropinWeeks.includes(date);
+              const label = new Date(date + "T12:00:00").toLocaleDateString(
+                lang === "fr" ? "fr-CA" : "en-CA",
+                { month: "short", day: "numeric" }
+              );
+              return (
+                <button
+                  key={date}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onDropinToggle(date); }}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                    checked
+                      ? "bg-[var(--color-scx-primary)] text-white"
+                      : "bg-white/10 text-white/60 hover:bg-white/20"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {dropinWeeks.length > 0 && (
+            <div className="mt-2 text-xs text-white/50 text-right">
+              {dropinWeeks.length} × ${dropinPrice.toFixed(2)} = <strong className="text-white">${(dropinWeeks.length * dropinPrice).toFixed(2)}</strong>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -271,6 +368,7 @@ export default function SignUp() {
   const [loadingClasses, setLoadingClasses] = useState(false);
   const [classError, setClassError] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [dropinSelections, setDropinSelections] = useState({}); // { [classId]: string[] }
 
   // Step 3: review
   const [studentRebate, setStudentRebate] = useState(false);
@@ -361,13 +459,19 @@ export default function SignUp() {
     return Math.min(total, base);
   }
 
+  const dropinTotal = Object.entries(dropinSelections).reduce((sum, [id, weeks]) => {
+    const cls = classes.find((c) => c.id === Number(id));
+    return sum + (Number(cls?.dropin_price) || 0) * weeks.length;
+  }, 0);
+
   const total = selectedClasses.reduce((sum, c) => {
     const price = Number(c.price) || 0;
-    const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+    const classRebate = Number(c.rebate) || 0;
+    const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
     const promo = getPromoDiscount(c);
     const mercredi = getMercredisDiscount(c);
-    return sum + Math.max(0, price - rebate - promo - mercredi);
-  }, 0);
+    return sum + Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi);
+  }, 0) + dropinTotal;
 
   function setField(key, val) {
     setForm((p) => ({ ...p, [key]: val }));
@@ -390,7 +494,8 @@ export default function SignUp() {
   }
 
   function goToReview() {
-    if (selectedIds.size === 0) {
+    const hasDropins = Object.values(dropinSelections).some((w) => w.length > 0);
+    if (selectedIds.size === 0 && !hasDropins) {
       setClassError(locale === "fr" ? "Veuillez sélectionner au moins un cours." : "Please select at least one class.");
       return;
     }
@@ -442,6 +547,9 @@ export default function SignUp() {
           phone: form.phone,
           role: form.role,
           classIds: Array.from(selectedIds),
+          dropinSelections: Object.fromEntries(
+            Object.entries(dropinSelections).filter(([, w]) => w.length > 0)
+          ),
           studentRebate,
           note,
           promoCodes: appliedPromos.map((p) => p.code),
@@ -608,6 +716,8 @@ export default function SignUp() {
 
   return (
     <>
+      <title>Sign Up — Swing ConneXion</title>
+      <meta name="robots" content="noindex,nofollow" />
       <PageHero
         className="-mt-25"
         imageSrc="/images/katya_zack.jpg"
@@ -832,12 +942,27 @@ export default function SignUp() {
                       key={cls.id}
                       cls={cls}
                       selected={selectedIds.has(cls.id)}
+                      dropinWeeks={dropinSelections[cls.id] || []}
                       lang={locale}
                       onToggle={() => {
+                        // clear drop-in weeks for this class when selecting full
+                        setDropinSelections((prev) => { const n = { ...prev }; delete n[cls.id]; return n; });
                         setSelectedIds((prev) => {
                           const next = new Set(prev);
                           next.has(cls.id) ? next.delete(cls.id) : next.add(cls.id);
                           return next;
+                        });
+                        setClassError(null);
+                      }}
+                      onDropinToggle={(date) => {
+                        // clear full selection when picking drop-in weeks
+                        setSelectedIds((prev) => { const n = new Set(prev); n.delete(cls.id); return n; });
+                        setDropinSelections((prev) => {
+                          const weeks = prev[cls.id] || [];
+                          const next = weeks.includes(date)
+                            ? weeks.filter((d) => d !== date)
+                            : [...weeks, date];
+                          return { ...prev, [cls.id]: next };
                         });
                         setClassError(null);
                       }}
@@ -908,10 +1033,11 @@ export default function SignUp() {
                     {selectedClasses.map((cls) => {
                       const name = cls.name?.[locale] || cls.name?.fr || "";
                       const price = Number(cls.price) || 0;
-                      const rebate = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+                      const classRebate = Number(cls.rebate) || 0;
+                      const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
                       const promo = getPromoDiscount(cls);
                       const mercredi = getMercredisDiscount(cls);
-                      const final = Math.max(0, price - rebate - promo - mercredi);
+                      const final = Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi);
                       const hasDiscount = price !== final;
                       return (
                         <div key={cls.id} className="flex justify-between items-center text-sm">
@@ -929,6 +1055,29 @@ export default function SignUp() {
                         </div>
                       );
                     })}
+                    {Object.entries(dropinSelections)
+                      .filter(([, weeks]) => weeks.length > 0)
+                      .map(([id, weeks]) => {
+                        const cls = classes.find((c) => c.id === Number(id));
+                        if (!cls) return null;
+                        const name = cls.name?.[locale] || cls.name?.fr || "";
+                        const dropinPrice = Number(cls.dropin_price) || 0;
+                        return (
+                          <div key={`dropin-${id}`} className="text-sm">
+                            <div className="flex justify-between items-center">
+                              <span className="text-white">{name} <span className="text-white/40 text-xs">({locale === "fr" ? "à la carte" : "drop-in"})</span></span>
+                              <span className="text-white/80 font-semibold">${(dropinPrice * weeks.length).toFixed(2)}</span>
+                            </div>
+                            <div className="ml-0 mt-1 flex flex-wrap gap-1">
+                              {weeks.sort().map((d) => (
+                                <span key={d} className="text-xs bg-white/10 text-white/60 px-2 py-0.5 rounded">
+                                  {new Date(d + "T12:00:00").toLocaleDateString(locale === "fr" ? "fr-CA" : "en-CA", { month: "short", day: "numeric" })}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
 

@@ -15,6 +15,8 @@ export default function NotFound() {
 
   return (
     <>
+      <title>404 — Swing ConneXion</title>
+      <meta name="robots" content="noindex,nofollow" />
       <PageHero
         className="-mt-20"
         imageSrc="/images/katya_zack.jpg"

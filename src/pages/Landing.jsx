@@ -3,6 +3,35 @@ import { useI18n } from "../i18n/useI18n";
 import { useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import UpcomingCalendar from "../components/UpcomingCalendar";
+import MetaTags from "../components/MetaTags";
+
+const SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": ["LocalBusiness", "DanceSchool"],
+  "name": "Swing ConneXion",
+  "url": "https://swingconnexion.ca",
+  "logo": "https://swingconnexion.ca/logos/SCX_rond_bleu.png",
+  "image": "https://swingconnexion.ca/images/meta_splash.png",
+  "description": "Swing dance school in Montreal offering group classes, private lessons, weekly intro classes, and performance troupes.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "1483 Avenue du Mont-Royal, 3e étage",
+    "addressLocality": "Montréal",
+    "addressRegion": "QC",
+    "postalCode": "H2J 1Z5",
+    "addressCountry": "CA"
+  },
+  "telephone": "+15148064121",
+  "email": "info@swingconnexion.com",
+  "priceRange": "$$",
+  "currenciesAccepted": "CAD",
+  "paymentAccepted": "Cash, Interac, Credit Card",
+  "areaServed": { "@type": "City", "name": "Montréal" },
+  "sameAs": [
+    "https://www.facebook.com/swingconnexion",
+    "https://www.instagram.com/swingconnexion"
+  ]
+};
 
 export default function Landing() {
   const { t } = useI18n();
@@ -11,6 +40,8 @@ export default function Landing() {
 
   return (
     <>
+      <MetaTags i18nKey="meta.landing" path="/" />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SCHEMA) }} />
       <section className="relative isolate -mt-25">
         {/* Background image + overlay */}
         <div className="absolute inset-0 -z-10">

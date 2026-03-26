@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /signup
+Disallow: /en/signup
+Disallow: /fr/signup
+Disallow: /payment
+Disallow: /en/payment
+Disallow: /fr/payment
+Disallow: /payment-thanks
+Disallow: /en/payment-thanks
+Disallow: /fr/payment-thanks
+
+Sitemap: https://swingconnexion.ca/sitemap.xml

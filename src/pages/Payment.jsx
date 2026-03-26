@@ -101,6 +101,8 @@ export default function Payment() {
 
   return (
     <>
+      <title>Payment — Swing ConneXion</title>
+      <meta name="robots" content="noindex,nofollow" />
       <PageHero
         className="-mt-20"
         imageSrc="/images/katya_zack.jpg"

@@ -11,7 +11,7 @@ import { useI18n } from "../i18n/useI18n";
  * Usage:
  *   <MetaTags i18nKey="meta.contact" path="/contact" />
  */
-export default function MetaTags({ i18nKey, path, image, extra = null }) {
+export default function MetaTags({ i18nKey, path, image, extra = null, noindex = false }) {
   const { t } = useI18n();
   const { lang } = useParams();
   const prefix = lang ? `/${lang}` : "";
@@ -28,6 +28,10 @@ export default function MetaTags({ i18nKey, path, image, extra = null }) {
   // Prefer absolute image URLs for scrapers
   const img = image || meta?.image || `${origin}/images/social-thumbnail.jpg`;
 
+  // Hreflang: canonical FR = no prefix, EN = /en/
+  const hrefFr = `${origin}${path || ""}`;
+  const hrefEn = `${origin}/en${path || ""}`;
+
   return (
     <>
       {/* React 19 hoists these into <head> automatically */}
@@ -35,6 +39,12 @@ export default function MetaTags({ i18nKey, path, image, extra = null }) {
       <link rel="canonical" href={url} />
       <meta name="description" content={desc} />
       <meta name="keywords" content={tags} />
+      {noindex && <meta name="robots" content="noindex,nofollow" />}
+
+      {/* Hreflang language alternates */}
+      <link rel="alternate" hrefLang="fr" href={hrefFr} />
+      <link rel="alternate" hrefLang="en" href={hrefEn} />
+      <link rel="alternate" hrefLang="x-default" href={hrefFr} />
 
       {/* Open Graph */}
       <meta property="og:type" content="website" />
@@ -42,6 +52,9 @@ export default function MetaTags({ i18nKey, path, image, extra = null }) {
       <meta property="og:description" content={desc} />
       <meta property="og:image" content={img} />
       <meta property="og:url" content={url} />
+      <meta property="og:locale" content={lang === "en" ? "en_CA" : "fr_CA"} />
+      <meta property="og:locale:alternate" content={lang === "en" ? "fr_CA" : "en_CA"} />
+      <meta property="og:site_name" content="Swing ConneXion" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -49,7 +62,7 @@ export default function MetaTags({ i18nKey, path, image, extra = null }) {
       <meta name="twitter:description" content={desc} />
       <meta name="twitter:image" content={img} />
 
-      {/* Optional extras (e.g., og:image:width/height, alternates, etc.) */}
+      {/* Optional extras */}
       {extra}
     </>
   );

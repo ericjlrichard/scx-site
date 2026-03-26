@@ -56,11 +56,19 @@ function shortTitle(fullName = "") {
   return fullName.split(" - ")[0].split(" — ")[0].trim();
 }
 
-function buildEvents(apiClasses, lang) {
-  const oneWeekAgoKey = toLocalDateKey(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+function buildEvents(apiClasses, lang, onlyUpcoming = false) {
+  const todayKey = toLocalDateKey(new Date());
 
   return apiClasses
-    .filter((c) => c.date && c.date >= oneWeekAgoKey)
+    .filter((c) => {
+      if (!c.date) return false;
+      const lastDate = c.duration_weeks
+        ? toLocalDateKey(new Date(new Date(c.date + "T12:00:00").getTime() + (c.duration_weeks - 1) * 7 * 86400000))
+        : c.date;
+      if (lastDate < todayKey) return false;
+      if (onlyUpcoming && c.date < todayKey) return false;
+      return true;
+    })
     .map((c) => {
       const name = c.name?.[lang] || c.name?.en || "";
       const desc = c.desc?.[lang] || c.desc?.en || "";
@@ -130,6 +138,7 @@ export default function UpcomingCalendar() {
   const [apiClasses, setApiClasses] = useState([]);
   const [apiTroupes, setApiTroupes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [onlyUpcoming, setOnlyUpcoming] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -142,7 +151,7 @@ export default function UpcomingCalendar() {
     });
   }, []);
 
-  const classEvents = buildEvents(apiClasses, lang);
+  const classEvents = buildEvents(apiClasses, lang, onlyUpcoming);
   const troupeEvents = buildTroupeEvents(apiTroupes, lang);
   const events = [...classEvents, ...troupeEvents];
   const byDay = groupByDay(events);
@@ -196,14 +205,23 @@ export default function UpcomingCalendar() {
       <div className="mx-auto max-w-6xl px-4 pb-12">
         <div className="rounded-3xl border border-white/10 bg-[color:var(--color-scx-secondary)]/70 backdrop-blur-md shadow-2xl">
           <div className="px-6 pt-7 pb-5 md:px-8">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <h3 className="text-2xl md:text-3xl font-semibold tracking-tight"
-                  style={{ color: "var(--color-scx-primary)" }}>
-                  {t?.("pages.landing.upcomingTitle") ||
-                    (lang === "fr" ? "Cours à venir" : "Upcoming classes")}
-                </h3>
-              </div>
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <h3 className="text-2xl md:text-3xl font-semibold tracking-tight"
+                style={{ color: "var(--color-scx-primary)" }}>
+                {t?.("pages.landing.upcomingTitle") ||
+                  (lang === "fr" ? "Cours à venir" : "Upcoming classes")}
+              </h3>
+              <label className="flex items-center gap-2 cursor-pointer select-none mt-1">
+                <input
+                  type="checkbox"
+                  checked={onlyUpcoming}
+                  onChange={(e) => setOnlyUpcoming(e.target.checked)}
+                  className="w-4 h-4 rounded accent-[color:var(--color-scx-primary)] cursor-pointer"
+                />
+                <span className="text-sm text-white/70">
+                  {lang === "fr" ? "À venir seulement" : "Upcoming only"}
+                </span>
+              </label>
             </div>
 
             {/* Mobile: list by day */}
