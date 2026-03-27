@@ -4,64 +4,64 @@
 
  "meta": {
   "contact": {
-    "title": "Contact Swing ConneXion",
-    "desc": "Official contact page for SCX in Montreal.",
+    "title": "Contact — Swing ConneXion | Swing Dance Montreal",
+    "desc": "Get in touch with Swing ConneXion — Montreal's swing dance school on the Plateau. Questions about classes, private lessons, or Mercredis Swing? We'd love to hear from you.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, SwingMontreal, ContactSCX, DanceMontreal, swing dance school, lindy hop"
+    "tags": "swing montreal, cours de danse montreal, contact swing connexion"
   },
   "landing": {
-    "title": "Swing ConneXion — Swing Dance School in Montreal",
-    "desc": "Learn swing dancing, meet people, and join the SCX community in the heart of Plateau Mont-Royal.",
+    "title": "Swing ConneXion — Swing Dance Classes in Montreal",
+    "desc": "Montreal's swing dance school on the Plateau. Lindy Hop, Balboa, Charleston — group classes, private lessons, and live jazz every Wednesday.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, SwingMontreal, SCX, SwingDance, PlateauMontRoyal, lindy hop"
+    "tags": "swing montreal, swing dance classes montreal, lindy hop montreal, cours de danse montreal, plateau mont-royal"
   },
   "groupClasses": {
-    "title": "Group Classes — Swing ConneXion",
-    "desc": "Swing dance group classes for all levels, from absolute beginner to advanced.",
+    "title": "Swing Dance Group Classes Montreal | Swing ConneXion",
+    "desc": "Lindy Hop, Balboa & Charleston group classes on the Plateau Mont-Royal. All levels welcome — from total beginner to advanced. Register now.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, swing group classes, lindy hop, dance Montreal, learn swing"
+    "tags": "swing dance classes montreal, lindy hop montreal, balboa montreal, charleston montreal, cours de danse plateau"
   },
   "introClasses": {
-    "title": "Intro Classes — Swing ConneXion",
-    "desc": "Discover swing dance with our weekly intro classes at Mercredis Swing Live.",
+    "title": "Free Weekly Intro Swing Class Montreal | Swing ConneXion",
+    "desc": "Try swing dancing for free every Wednesday at Café La Ligne Verte. Intro class at 7pm followed by three sets of live jazz. No experience needed.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, swing intro classes, swing introduction classes, swing group classes, lindy hop, dance Montreal, learn swing"
+    "tags": "free swing class montreal, intro swing dance montreal, mercredis swing, live jazz montreal wednesday"
   },
   "mercredisswing": {
-    "title": "Intro Classes — Swing ConneXion",
-    "desc": "Discover swing dance with our weekly intro classes at Mercredis Swing Live.",
+    "title": "Mercredis Swing — Live Jazz & Swing Dancing Montreal",
+    "desc": "Every Wednesday at Café La Ligne Verte: three sets of live jazz at 8pm + a free intro swing class at 7pm. Montreal's weekly swing night since 2007.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, swing intro classes, swing introduction classes, swing group classes, lindy hop, dance Montreal, learn swing"
+    "tags": "live jazz montreal, swing dancing montreal, mercredis swing, live jazz wednesday montreal, lindy hop social"
   },
   "privatelessons": {
-    "title": "Private Lessons — Swing ConneXion",
-    "desc": "Personalized one-on-one coaching to progress faster and unlock your dance.",
+    "title": "Private Swing Dance Lessons Montreal | Swing ConneXion",
+    "desc": "One-on-one coaching in Lindy Hop, Balboa or Charleston on the Plateau. Progress faster at your own pace with personalized feedback from SCX instructors.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, private lessons, swing coaching, dance Montreal, lindy hop private"
+    "tags": "private swing lessons montreal, lindy hop private class, swing dance coaching montreal, plateau mont-royal"
   },
   "registration": {
-    "title": "Registration — Swing ConneXion",
-    "desc": "Reserve classes, manage your enrolments, and join the SCX experience.",
+    "title": "Register for Swing Classes Montreal | Swing ConneXion",
+    "desc": "Sign up for swing dance classes in Montreal. Choose your level, pick your schedule, and join the SCX community on the Plateau Mont-Royal.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, dance registration, swing classes, bookings Montreal"
+    "tags": "register swing classes montreal, sign up dance montreal, swing connexion inscription"
   },
   "staff": {
-    "title": "The SCX Team",
-    "desc": "Meet the teachers, artists, and mentors of Swing ConneXion.",
+    "title": "Our Instructors — Swing ConneXion Montreal",
+    "desc": "Meet the teachers and artists behind Swing ConneXion. Passionate lindy hoppers, balboa dancers, and swing musicians shaping Montreal's swing scene.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, swing teachers Montreal, dance instructors, lindy hop Montreal"
+    "tags": "swing dance instructors montreal, lindy hop teachers montreal, swing connexion team"
   },
   "troupes": {
-    "title": "Troupes — Swing ConneXion",
-    "desc": "Discover the performance troupes of Swing ConneXion in Montreal.",
+    "title": "Swing Dance Performance Troupes | Swing ConneXion Montreal",
+    "desc": "Swing ConneXion's performance troupes — dedicated dancers pushing the art of Lindy Hop, Balboa and swing in Montreal. Auditions and open rehearsals available.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, swing troupes, performance dance Montreal, lindy hop"
+    "tags": "swing dance troupe montreal, lindy hop performance montreal, swing connexion troupes"
   },
   "codeofconduct": {
-    "title": "Code of Conduct — Swing ConneXion",
-    "desc": "Our commitment to a safe, inclusive, and welcoming swing dance space in Montreal.",
+    "title": "Code of Conduct — Swing ConneXion Montreal",
+    "desc": "Swing ConneXion is committed to a safe, inclusive, and welcoming space for all dancers. Read our community code of conduct.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
-    "tags": "SwingConnexion, code of conduct, safe dance space, inclusivity, swing Montreal"
+    "tags": "swing connexion code of conduct, safe dance space montreal, inclusive swing community"
   }
 },
 

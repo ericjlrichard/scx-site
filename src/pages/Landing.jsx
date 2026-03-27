@@ -29,7 +29,8 @@ const SCHEMA = {
   "areaServed": { "@type": "City", "name": "Montréal" },
   "sameAs": [
     "https://www.facebook.com/swingconnexion",
-    "https://www.instagram.com/swingconnexion"
+    "https://www.instagram.com/swingconnexion",
+    "https://www.facebook.com/mercredisswing"
   ]
 };
 
