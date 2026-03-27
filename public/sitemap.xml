@@ -4,160 +4,160 @@
 
   <!-- Home -->
   <url>
-    <loc>https://www.swingconnexion.com/</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/"/>
+    <loc>https://swingconnexion.com/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/"/>
+    <loc>https://swingconnexion.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Group Classes -->
   <url>
-    <loc>https://www.swingconnexion.com/groupclasses</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/groupclasses"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/groupclasses"/>
+    <loc>https://swingconnexion.com/groupclasses</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/groupclasses"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/groupclasses"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/groupclasses</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/groupclasses"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/groupclasses"/>
+    <loc>https://swingconnexion.com/en/groupclasses</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/groupclasses"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/groupclasses"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Intro Classes -->
   <url>
-    <loc>https://www.swingconnexion.com/introclasses</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/introclasses"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/introclasses"/>
+    <loc>https://swingconnexion.com/introclasses</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/introclasses"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/introclasses"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/introclasses</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/introclasses"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/introclasses"/>
+    <loc>https://swingconnexion.com/en/introclasses</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/introclasses"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/introclasses"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Mercredis Swing -->
   <url>
-    <loc>https://www.swingconnexion.com/mercredisswing</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/mercredisswing"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/mercredisswing"/>
+    <loc>https://swingconnexion.com/mercredisswing</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/mercredisswing"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/mercredisswing"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/mercredisswing</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/mercredisswing"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/mercredisswing"/>
+    <loc>https://swingconnexion.com/en/mercredisswing</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/mercredisswing"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/mercredisswing"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Private Lessons -->
   <url>
-    <loc>https://www.swingconnexion.com/privatelessons</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/privatelessons"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/privatelessons"/>
+    <loc>https://swingconnexion.com/privatelessons</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/privatelessons"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/privatelessons"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/privatelessons</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/privatelessons"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/privatelessons"/>
+    <loc>https://swingconnexion.com/en/privatelessons</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/privatelessons"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/privatelessons"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Troupes -->
   <url>
-    <loc>https://www.swingconnexion.com/troupes</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/troupes"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/troupes"/>
+    <loc>https://swingconnexion.com/troupes</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/troupes"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/troupes"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/troupes</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/troupes"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/troupes"/>
+    <loc>https://swingconnexion.com/en/troupes</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/troupes"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/troupes"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Staff -->
   <url>
-    <loc>https://www.swingconnexion.com/staff</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/staff"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/staff"/>
+    <loc>https://swingconnexion.com/staff</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/staff"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/staff"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/staff</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/staff"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/staff"/>
+    <loc>https://swingconnexion.com/en/staff</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/staff"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/staff"/>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Contact -->
   <url>
-    <loc>https://www.swingconnexion.com/contact</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/contact"/>
+    <loc>https://swingconnexion.com/contact</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/contact"/>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/contact</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/contact"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/contact"/>
+    <loc>https://swingconnexion.com/en/contact</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/contact"/>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Registration -->
   <url>
-    <loc>https://www.swingconnexion.com/register</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/register"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/register"/>
+    <loc>https://swingconnexion.com/register</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/register"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/register"/>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/register</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/register"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/register"/>
+    <loc>https://swingconnexion.com/en/register</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/register"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/register"/>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <!-- Code of Conduct -->
   <url>
-    <loc>https://www.swingconnexion.com/codeofconduct</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/codeofconduct"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/codeofconduct"/>
+    <loc>https://swingconnexion.com/codeofconduct</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/codeofconduct"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/codeofconduct"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.swingconnexion.com/en/codeofconduct</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://www.swingconnexion.com/codeofconduct"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://www.swingconnexion.com/en/codeofconduct"/>
+    <loc>https://swingconnexion.com/en/codeofconduct</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://swingconnexion.com/codeofconduct"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://swingconnexion.com/en/codeofconduct"/>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
