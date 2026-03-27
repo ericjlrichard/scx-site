@@ -7,7 +7,7 @@ import Container from "../components/Container";
 import Button from "../components/Button";
 import Spinner from "../components/Spinner";
 
-const API = "https://api.swingconnexion.ca/public";
+const API = "https://api.swingconnexion.com/public";
 const REBATE_AMOUNT = 40;
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 

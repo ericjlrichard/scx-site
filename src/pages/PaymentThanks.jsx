@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import Container from "../components/Container";
 import Spinner from "../components/Spinner";
 
-const API = "https://api.swingconnexion.ca/public";
+const API = "https://api.swingconnexion.com/public";
 
 export default function PaymentThanks() {
   const { lang } = useParams();

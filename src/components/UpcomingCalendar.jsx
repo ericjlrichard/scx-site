@@ -142,8 +142,8 @@ export default function UpcomingCalendar() {
 
   useEffect(() => {
     Promise.all([
-      fetch("https://api.swingconnexion.ca/public/classes").then((r) => r.json()).catch(() => []),
-      fetch("https://api.swingconnexion.ca/public/troupes").then((r) => r.json()).catch(() => []),
+      fetch("https://api.swingconnexion.com/public/classes").then((r) => r.json()).catch(() => []),
+      fetch("https://api.swingconnexion.com/public/troupes").then((r) => r.json()).catch(() => []),
     ]).then(([classes, troupes]) => {
       setApiClasses(Array.isArray(classes) ? classes : []);
       setApiTroupes(Array.isArray(troupes) ? troupes : []);

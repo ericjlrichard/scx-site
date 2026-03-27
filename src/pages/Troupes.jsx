@@ -74,7 +74,7 @@ export default function Troupes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://api.swingconnexion.ca/public/troupes")
+    fetch("https://api.swingconnexion.com/public/troupes")
       .then((r) => r.json())
       .then((data) => {
         setTroupes(data);
