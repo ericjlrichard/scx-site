@@ -22,7 +22,7 @@ export default function MetaTags({ i18nKey, path, image, extra = null, noindex =
   const tags = meta?.tags || "SwingConnexion, MontrealSwing, SCX";
 
   const origin =
-    import.meta.env.VITE_SITE_ORIGIN || "https://swingconnexion.ca";
+    import.meta.env.VITE_SITE_ORIGIN || "https://www.swingconnexion.com";
   const url = `${origin}${prefix}${path || ""}`;
 
   // Prefer absolute image URLs for scrapers

@@ -11,4 +11,4 @@ Disallow: /payment-thanks
 Disallow: /en/payment-thanks
 Disallow: /fr/payment-thanks
 
-Sitemap: https://swingconnexion.ca/sitemap.xml
+Sitemap: https://www.swingconnexion.com/sitemap.xml

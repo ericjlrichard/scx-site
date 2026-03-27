@@ -9,9 +9,9 @@ const SCHEMA = {
   "@context": "https://schema.org",
   "@type": ["LocalBusiness", "DanceSchool"],
   "name": "Swing ConneXion",
-  "url": "https://swingconnexion.ca",
-  "logo": "https://swingconnexion.ca/logos/SCX_rond_bleu.png",
-  "image": "https://swingconnexion.ca/images/meta_splash.png",
+  "url": "https://www.swingconnexion.com",
+  "logo": "https://www.swingconnexion.com/logos/SCX_rond_bleu.png",
+  "image": "https://www.swingconnexion.com/images/meta_splash.png",
   "description": "Swing dance school in Montreal offering group classes, private lessons, weekly intro classes, and performance troupes.",
   "address": {
     "@type": "PostalAddress",
