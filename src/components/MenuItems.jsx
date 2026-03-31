@@ -36,12 +36,6 @@ export default function MenuItems({
       ],
     },
     {
-      kind: "ext",
-      href: "https://swingconnexion.square.site/shop/billets-show-20e-anniversaire/RZKZGYZIMSAODGZPP3WN32ER",
-      label: t("nav.tickets"),
-      newTab: true,
-    },
-    {
       kind: "menu",
       label: t("nav.staff"),
       children: [

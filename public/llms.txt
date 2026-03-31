@@ -1,0 +1,40 @@
+# Swing ConneXion
+
+> Swing dance school in Montréal, Québec, Canada. Founded in 2005, celebrating 20 years of swing dance on the Plateau Mont-Royal.
+
+Swing ConneXion (SCX) teaches Lindy Hop, Balboa, and Charleston to all levels — from total beginners to advanced social dancers and performers. Classes are held at the studio at 1483 avenue du Mont-Royal Est, 3e étage, Montréal (H2J 1Z5).
+
+## What We Offer
+
+- **Group classes** — Lindy Hop, Balboa, and Charleston at all levels, running in multi-week sessions throughout the year
+- **Private lessons** — one-on-one or couple coaching with SCX instructors
+- **Weekly intro class** — free swing intro every Wednesday at 19h at Café La Ligne Verte (2531 Ontario Est), followed by three sets of live jazz
+- **Mercredis Swing** — Montreal's weekly live jazz and swing dance night, running since 2007, every Wednesday at Café La Ligne Verte
+- **Performance troupes** — dedicated rehearsal groups for dancers pursuing Lindy Hop and Balboa performance
+
+## Key Pages
+
+- [Home](https://swingconnexion.com/)
+- [Group Classes](https://swingconnexion.com/courses)
+- [Weekly Intro Class](https://swingconnexion.com/intro)
+- [Mercredis Swing](https://swingconnexion.com/mercredisswing)
+- [Private Lessons](https://swingconnexion.com/privates)
+- [Performance Troupes](https://swingconnexion.com/troupes)
+- [Our Team](https://swingconnexion.com/staff)
+- [Register](https://swingconnexion.com/signup)
+- [Contact](https://swingconnexion.com/contact)
+- [Code of Conduct](https://swingconnexion.com/code-of-conduct)
+
+## Contact
+
+- Address: 1483 avenue du Mont-Royal Est, 3e étage, Montréal, QC H2J 1Z5
+- Phone: 514-806-4121
+- Email: info@swingconnexion.com
+- Website: https://swingconnexion.com
+- Facebook: https://www.facebook.com/swingconnexion
+- Instagram: https://www.instagram.com/swingconnexion
+- Mercredis Swing Facebook: https://www.facebook.com/mercredisswing
+
+## Language
+
+The site is bilingual (French and English). French is the default; English pages are prefixed with `/en/`.
