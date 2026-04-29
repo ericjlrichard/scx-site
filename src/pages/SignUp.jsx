@@ -47,7 +47,7 @@ function getRecaptchaToken() {
   });
 }
 
-const STEPS = ["info", "classes", "review"];
+const STEPS = ["classes", "info", "review"];
 
 function StepIndicator({ step }) {
   const labels = { info: "Your Info", classes: "Classes", review: "Review" };
@@ -123,8 +123,57 @@ function getWeekDates(cls) {
   return dates;
 }
 
-function ClassCard({ cls, selected, onToggle, lang, dropinWeeks = [], onDropinToggle }) {
-  const [descExpanded, setDescExpanded] = useState(false);
+function ShareModal({ url, lang, onClose }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-sm rounded-3xl border border-white/15 bg-[var(--color-scx-secondary)] p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-white font-bold text-lg mb-1">
+          {lang === "fr" ? "Partager ce cours" : "Share this class"}
+        </h3>
+        <p className="text-white/50 text-sm mb-4">
+          {lang === "fr" ? "Copiez le lien pour partager directement vers ce cours." : "Copy the link to share directly to this class."}
+        </p>
+        <div className="flex gap-2">
+          <input
+            readOnly
+            value={url}
+            className="flex-1 min-w-0 rounded-2xl bg-white/10 border border-white/15 px-4 py-2.5 text-sm text-white/80 outline-none"
+          />
+          <button
+            onClick={copy}
+            className="flex-shrink-0 rounded-2xl bg-[var(--color-scx-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
+          >
+            {copied ? "✓" : lang === "fr" ? "Copier" : "Copy"}
+          </button>
+        </div>
+        <button
+          onClick={onClose}
+          className="mt-4 w-full text-center text-sm text-white/40 hover:text-white/70"
+        >
+          {lang === "fr" ? "Fermer" : "Close"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ClassCard({ cls, selected, onToggle, lang, dropinWeeks = [], onDropinToggle, expandedByDefault = false }) {
+  const [descExpanded, setDescExpanded] = useState(expandedByDefault);
+  const [showShare, setShowShare] = useState(false);
+  const shareUrl = `${window.location.origin}${lang === "fr" ? "/fr" : "/en"}/signup?class=${cls.id}`;
   const name = cls.name?.[lang] || cls.name?.fr || "";
   const desc = cls.desc?.[lang] || cls.desc?.fr || "";
   const teachers = Array.isArray(cls.teachers)
@@ -185,42 +234,63 @@ function ClassCard({ cls, selected, onToggle, lang, dropinWeeks = [], onDropinTo
           {cls.duration_weeks && <span>📆 {cls.duration_weeks} weeks</span>}
         </div>
       </div>
-      <div className="flex-shrink-0 text-right">
-        {rebate > 0 && (
-          <div className="text-sm text-white/40 line-through">${price.toFixed(2)}</div>
-        )}
-        <span className="font-bold text-white text-lg">
-          ${finalPrice.toFixed(2)}
-        </span>
-        <div className="text-xs text-white/50">CAD</div>
+      <div className="flex-shrink-0 flex flex-col items-end gap-2">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setShowShare(true); }}
+          className="w-7 h-7 rounded-full bg-[var(--color-scx-primary)] hover:opacity-80 flex items-center justify-center transition-opacity"
+          title={lang === "fr" ? "Partager" : "Share"}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 text-white">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+        <div className="text-right">
+          {rebate > 0 && (
+            <div className="text-sm text-white/40 line-through">${price.toFixed(2)}</div>
+          )}
+          <span className="font-bold text-white text-lg">
+            ${finalPrice.toFixed(2)}
+          </span>
+          <div className="text-xs text-white/50">CAD</div>
+        </div>
       </div>
     </div>
   );
+  const shareModal = showShare ? <ShareModal url={shareUrl} lang={lang} onClose={() => setShowShare(false)} /> : null;
 
   if (!isDropin) {
     return (
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`w-full text-left rounded-2xl border px-5 py-4 transition-all ${
-          selected
-            ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
-            : "border-white/15 bg-white/5 hover:bg-white/10"
-        }`}
-      >
-        {cardBody}
-      </button>
+      <>
+        {shareModal}
+        <button
+          type="button"
+          onClick={onToggle}
+          className={`w-full text-left rounded-2xl border px-5 py-4 transition-all ${
+            selected
+              ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
+              : "border-white/15 bg-white/5 hover:bg-white/10"
+          }`}
+        >
+          {cardBody}
+        </button>
+      </>
     );
   }
 
   // Drop-in enabled: show full-class + per-week options
   return (
-    <div className={`rounded-2xl border px-5 py-4 transition-all ${
-      isActive
-        ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
-        : "border-white/15 bg-white/5"
-    }`}>
-      {cardBody}
+    <>
+      {shareModal}
+      <div className={`rounded-2xl border px-5 py-4 transition-all ${
+        isActive
+          ? "border-[var(--color-scx-primary)] bg-[var(--color-scx-primary)]/15 ring-1 ring-[var(--color-scx-primary)]"
+          : "border-white/15 bg-white/5"
+      }`}>
+      <button type="button" onClick={onToggle} className="w-full text-left">
+        {cardBody}
+      </button>
 
       <div className="mt-4 ml-7 space-y-2">
         {/* Full class option */}
@@ -279,7 +349,8 @@ function ClassCard({ cls, selected, onToggle, lang, dropinWeeks = [], onDropinTo
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -289,8 +360,9 @@ export default function SignUp() {
   const { t } = useI18n();
   const locale = (lang || "fr").startsWith("en") ? "en" : "fr";
 
-  const [step, setStep] = useState("info");
+  const [step, setStep] = useState("classes");
   const [loadTime] = useState(() => Date.now());
+  const preselectId = Number(searchParams.get("class")) || null;
 
   // Load reCAPTCHA on mount
   useEffect(() => { loadRecaptcha(); }, []);
@@ -372,6 +444,7 @@ export default function SignUp() {
 
   // Step 3: review
   const [studentRebate, setStudentRebate] = useState(false);
+  const [payMonthly, setPayMonthly] = useState(false);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -422,14 +495,20 @@ export default function SignUp() {
           if (!aSwing1 && bSwing1) return 1;
           return 0;
         });
-        setClasses(filtered);
         const preselect = searchParams.get("class");
         if (preselect) {
           const id = Number(preselect);
-          if (filtered.some((c) => c.id === id)) {
-            setSelectedIds((prev) => new Set([...prev, id]));
+          const match = filtered.find((c) => c.id === id);
+          if (match) {
+            setSelectedIds(new Set([id]));
+            // If it's a non-summer preselect, only show that class
+            if (!match.is_summer) {
+              setClasses([match]);
+              return;
+            }
           }
         }
+        setClasses(filtered);
       })
       .catch(() => setClassError("Failed to load classes. Please refresh."))
       .finally(() => setLoadingClasses(false));
@@ -437,6 +516,7 @@ export default function SignUp() {
 
   // Computed totals
   const selectedClasses = classes.filter((c) => selectedIds.has(c.id));
+  const summerBundle = selectedClasses.length === 2 && selectedClasses.every((c) => !!c.is_summer);
 
   function getMercredisDiscount(cls) {
     if (!mercredisSwing) return 0;
@@ -464,7 +544,8 @@ export default function SignUp() {
     return sum + (Number(cls?.dropin_price) || 0) * weeks.length;
   }, 0);
 
-  const total = selectedClasses.reduce((sum, c) => {
+  const total = selectedClasses.reduce((sum, c, idx) => {
+    if (summerBundle && idx === 1) return sum; // second summer class is free
     const price = Number(c.price) || 0;
     const classRebate = Number(c.rebate) || 0;
     const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
@@ -487,19 +568,19 @@ export default function SignUp() {
     return e;
   }
 
-  function goToClasses() {
-    const e = validateInfo();
-    if (Object.keys(e).length) { setErrors(e); return; }
-    setStep("classes");
-  }
-
-  function goToReview() {
+  function goToInfo() {
     const hasDropins = Object.values(dropinSelections).some((w) => w.length > 0);
     if (selectedIds.size === 0 && !hasDropins) {
       setClassError(locale === "fr" ? "Veuillez sélectionner au moins un cours." : "Please select at least one class.");
       return;
     }
     setClassError(null);
+    setStep("info");
+  }
+
+  function goToReview() {
+    const e = validateInfo();
+    if (Object.keys(e).length) { setErrors(e); return; }
     setStep("review");
   }
 
@@ -551,6 +632,7 @@ export default function SignUp() {
             Object.entries(dropinSelections).filter(([, w]) => w.length > 0)
           ),
           studentRebate,
+          payMonthly,
           note,
           promoCodes: appliedPromos.map((p) => p.code),
         }),
@@ -665,38 +747,60 @@ export default function SignUp() {
               )}
 
               {/* Square payment option */}
-              {submitResult?.created?.length > 0 &&
-                submitResult.created.reduce((sum, r) => sum + (r.price || 0), 0) > 0 && (
-                <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 px-5 py-5 text-center">
-                  <p className="text-sm text-white/70 mb-4">
-                    {locale === "fr"
-                      ? "Vous pouvez payer immédiatement par carte de crédit via Square :"
-                      : "You can pay right now by credit card via Square:"}
-                  </p>
-                  {squareError && <p className="text-red-400 text-xs mb-3">{squareError}</p>}
-                  <Button
-                    bgVar="var(--color-scx-primary)"
-                    fgVar="#fff"
-                    className="w-full justify-center"
-                    onClick={() => goToSquare(submitResult)}
-                    disabled={squareLoading}
-                  >
-                    {squareLoading ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Spinner size={14} />
-                        {locale === "fr" ? "Redirection…" : "Redirecting…"}
-                      </span>
-                    ) : (
-                      locale === "fr" ? "Payer par carte (Square) →" : "Pay by card (Square) →"
+              {(() => {
+                const squareTotal = submitResult?.created?.reduce((sum, r) => sum + (r.price || 0), 0) ?? 0;
+                if (squareTotal <= 0) return null;
+                const squareTotalFmt = `$${squareTotal.toFixed(2)}`;
+                return (
+                  <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 px-5 py-5 text-center">
+                    <p className="text-sm text-white/70 mb-1">
+                      {payMonthly
+                        ? (locale === "fr"
+                          ? "Payez le premier versement maintenant par carte via Square :"
+                          : "Pay the first installment now by card via Square:")
+                        : (locale === "fr"
+                          ? "Vous pouvez payer immédiatement par carte de crédit via Square :"
+                          : "You can pay right now by credit card via Square:")}
+                    </p>
+                    {payMonthly && (
+                      <p className="text-xs text-white/40 mb-4">
+                        {locale === "fr"
+                          ? "Les 2 versements suivants seront facturés mensuellement."
+                          : "The 2 remaining payments will be invoiced monthly."}
+                      </p>
                     )}
-                  </Button>
-                  <p className="text-xs text-white/40 mt-3">
-                    {locale === "fr"
-                      ? "Des frais de traitement peuvent s'appliquer."
-                      : "Processing fees may apply."}
-                  </p>
-                </div>
-              )}
+                    {!payMonthly && <div className="mb-4" />}
+                    {squareError && <p className="text-red-400 text-xs mb-3">{squareError}</p>}
+                    <Button
+                      bgVar="var(--color-scx-primary)"
+                      fgVar="#fff"
+                      className="w-full justify-center"
+                      onClick={() => goToSquare(submitResult)}
+                      disabled={squareLoading}
+                    >
+                      {squareLoading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Spinner size={14} />
+                          {locale === "fr" ? "Redirection…" : "Redirecting…"}
+                        </span>
+                      ) : payMonthly ? (
+                        locale === "fr"
+                          ? `Payer le 1er versement (${squareTotalFmt}) →`
+                          : `Pay 1st installment (${squareTotalFmt}) →`
+                      ) : (
+                        locale === "fr"
+                          ? `Payer par carte (${squareTotalFmt}) →`
+                          : `Pay by card (${squareTotalFmt}) →`
+                      )}
+                    </Button>
+                    <p className="text-xs text-white/40 mt-3">
+                      {locale === "fr"
+                        ? "Des frais de traitement peuvent s'appliquer."
+                        : "Processing fees may apply."}
+                    </p>
+                  </div>
+                );
+              })()}
 
               <div className="text-center mt-4">
                 <a
@@ -899,9 +1003,12 @@ export default function SignUp() {
                       {errors.role && <p className="mt-1.5 text-xs text-red-400">{errors.role}</p>}
                     </div>
 
-                    <div className="pt-2">
-                      <Button bgVar="var(--color-scx-primary)" fgVar="#fff" className="w-full justify-center" onClick={goToClasses}>
-                        {locale === "fr" ? "Choisir mes cours →" : "Choose classes →"}
+                    <div className="flex gap-3 pt-2">
+                      <Button bgVar="transparent" fgVar="#fff" variant="outline" className="flex-1" onClick={() => setStep("classes")}>
+                        ← {locale === "fr" ? "Retour" : "Back"}
+                      </Button>
+                      <Button bgVar="var(--color-scx-primary)" fgVar="#fff" className="flex-1 justify-center" onClick={goToReview}>
+                        {locale === "fr" ? "Vérifier →" : "Review →"}
                       </Button>
                     </div>
                   </>
@@ -914,8 +1021,8 @@ export default function SignUp() {
               <div>
                 <p className="text-white/70 text-sm mb-5">
                   {locale === "fr"
-                    ? "Sélectionnez un ou plusieurs cours."
-                    : "Select one or more classes."}
+                    ? "Sélectionnez un ou plusieurs cours. Les projets d'été sont offerts en formule 2 pour 1."
+                    : "Select one or more classes. Summer projects are available at a 2-for-1 rate."}
                 </p>
 
                 {loadingClasses && (
@@ -936,55 +1043,117 @@ export default function SignUp() {
                   <p className="text-red-400 text-sm mb-4">{classError}</p>
                 )}
 
-                <div className="space-y-3">
-                  {classes.map((cls) => (
-                    <ClassCard
-                      key={cls.id}
-                      cls={cls}
-                      selected={selectedIds.has(cls.id)}
-                      dropinWeeks={dropinSelections[cls.id] || []}
-                      lang={locale}
-                      onToggle={() => {
-                        // clear drop-in weeks for this class when selecting full
-                        setDropinSelections((prev) => { const n = { ...prev }; delete n[cls.id]; return n; });
-                        setSelectedIds((prev) => {
-                          const next = new Set(prev);
-                          next.has(cls.id) ? next.delete(cls.id) : next.add(cls.id);
-                          return next;
-                        });
-                        setClassError(null);
-                      }}
-                      onDropinToggle={(date) => {
-                        // clear full selection when picking drop-in weeks
-                        setSelectedIds((prev) => { const n = new Set(prev); n.delete(cls.id); return n; });
-                        setDropinSelections((prev) => {
-                          const weeks = prev[cls.id] || [];
-                          const next = weeks.includes(date)
-                            ? weeks.filter((d) => d !== date)
-                            : [...weeks, date];
-                          return { ...prev, [cls.id]: next };
-                        });
-                        setClassError(null);
-                      }}
-                    />
-                  ))}
-                </div>
+                {(() => {
+                  const preselectClass = preselectId ? classes.find((c) => c.id === preselectId) : null;
+                  const isSummerPreselect = !!preselectClass?.is_summer;
+                  const regularClasses = classes.filter((c) => !c.is_summer);
+                  const summerClasses = classes.filter((c) => !!c.is_summer);
+
+                  function makeCard(cls) {
+                    return (
+                      <ClassCard
+                        key={cls.id}
+                        cls={cls}
+                        selected={selectedIds.has(cls.id)}
+                        dropinWeeks={dropinSelections[cls.id] || []}
+                        lang={locale}
+                        expandedByDefault={preselectId === cls.id}
+                        onToggle={() => {
+                          setDropinSelections((prev) => { const n = { ...prev }; delete n[cls.id]; return n; });
+                          setSelectedIds((prev) => {
+                            const next = new Set(prev);
+                            next.has(cls.id) ? next.delete(cls.id) : next.add(cls.id);
+                            return next;
+                          });
+                          setClassError(null);
+                        }}
+                        onDropinToggle={(date) => {
+                          setSelectedIds((prev) => { const n = new Set(prev); n.delete(cls.id); return n; });
+                          setDropinSelections((prev) => {
+                            const weeks = prev[cls.id] || [];
+                            const next = weeks.includes(date)
+                              ? weeks.filter((d) => d !== date)
+                              : [...weeks, date];
+                            return { ...prev, [cls.id]: next };
+                          });
+                          setClassError(null);
+                        }}
+                      />
+                    );
+                  }
+
+                  // Non-summer preselect: show only that class (share link behaviour)
+                  if (preselectId && !isSummerPreselect) {
+                    return <div className="space-y-3">{classes.map(makeCard)}</div>;
+                  }
+
+                  // Summer preselect: pinned class + "pick a 2nd" section
+                  if (isSummerPreselect) {
+                    const others = summerClasses.filter((c) => c.id !== preselectId);
+                    return (
+                      <>
+                        <div className="space-y-3 mb-6">
+                          {makeCard(preselectClass)}
+                        </div>
+                        {others.length > 0 && (
+                          <>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg">☀️</span>
+                              <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wide">
+                                {locale === "fr"
+                                  ? "2 pour 1 — choisissez un 2e projet !"
+                                  : "2-for-1 — pick a second project!"}
+                              </h3>
+                            </div>
+                            <p className="text-xs text-white/50 mb-3">
+                              {locale === "fr"
+                                ? "Ajoutez un 2e projet cet été et profitez du tarif 2 pour 1."
+                                : "Add a 2nd summer project and get the 2-for-1 rate."}
+                            </p>
+                            <div className="space-y-3">{others.map(makeCard)}</div>
+                          </>
+                        )}
+                      </>
+                    );
+                  }
+
+                  // No preselect: two sections
+                  return (
+                    <>
+                      {regularClasses.length > 0 && (
+                        <>
+                          <h3 className="text-xs font-bold text-white/50 uppercase tracking-wide mb-3">
+                            {locale === "fr" ? "Cours réguliers" : "Regular classes"}
+                          </h3>
+                          <div className="space-y-3 mb-8">{regularClasses.map(makeCard)}</div>
+                        </>
+                      )}
+                      {summerClasses.length > 0 && (
+                        <>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">☀️</span>
+                            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wide">
+                              {locale === "fr" ? "Projets d'été — 2 pour 1" : "Summer Projects — 2 for 1"}
+                            </h3>
+                          </div>
+                          <p className="text-xs text-white/50 mb-3">
+                            {locale === "fr"
+                              ? "Inscrivez-vous à 2 projets d'été et payez moitié prix chacun."
+                              : "Sign up for 2 summer projects and pay half price each."}
+                          </p>
+                          <div className="space-y-3">{summerClasses.map(makeCard)}</div>
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
 
                 <div className="flex gap-3 mt-6">
                   <Button
-                    bgVar="transparent"
-                    fgVar="#fff"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setStep("info")}
-                  >
-                    ← {locale === "fr" ? "Retour" : "Back"}
-                  </Button>
-                  <Button
                     bgVar="var(--color-scx-primary)"
                     fgVar="#fff"
-                    className="flex-1"
-                    onClick={goToReview}
+                    className="w-full justify-center"
+                    onClick={goToInfo}
                   >
                     {locale === "fr" ? "Continuer →" : "Continue →"}
                   </Button>
@@ -1029,10 +1198,27 @@ export default function SignUp() {
                       {locale === "fr" ? "Modifier" : "Edit"}
                     </button>
                   </div>
+                  {summerBundle && (
+                    <div className="mb-3 px-3 py-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+                      ☀️ {locale === "fr" ? "Offre 2 pour 1 — le 2e projet est gratuit !" : "2-for-1 deal — the 2nd project is free!"}
+                    </div>
+                  )}
                   <div className="space-y-2">
-                    {selectedClasses.map((cls) => {
+                    {selectedClasses.map((cls, idx) => {
                       const name = cls.name?.[locale] || cls.name?.fr || "";
                       const price = Number(cls.price) || 0;
+                      const isFree = summerBundle && idx === 1;
+                      if (isFree) {
+                        return (
+                          <div key={cls.id} className="flex justify-between items-center text-sm">
+                            <span className="text-white">{name}</span>
+                            <span className="text-white/80 font-semibold">
+                              <span className="line-through text-white/40 mr-2">${price.toFixed(2)}</span>
+                              <span className="text-amber-400">$0.00</span>
+                            </span>
+                          </div>
+                        );
+                      }
                       const classRebate = Number(cls.rebate) || 0;
                       const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
                       const promo = getPromoDiscount(cls);
@@ -1097,6 +1283,26 @@ export default function SignUp() {
                       {locale === "fr"
                         ? "Pour les étudiant·e·s à temps plein. Jamais sous $0."
                         : "For full-time students. Never below $0."}
+                    </p>
+                  </div>
+                </label>
+
+                {/* Monthly payments */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={payMonthly}
+                    onChange={(e) => setPayMonthly(e.target.checked)}
+                    className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                  />
+                  <div>
+                    <span className="text-sm text-white font-medium">
+                      {locale === "fr" ? "Payer en 3 versements mensuels" : "Pay in 3 monthly payments"}
+                    </span>
+                    <p className="text-xs text-white/50 mt-0.5">
+                      {locale === "fr"
+                        ? "Vous recevrez une facture par mois pendant 3 mois."
+                        : "You'll receive one invoice per month for 3 months."}
                     </p>
                   </div>
                 </label>

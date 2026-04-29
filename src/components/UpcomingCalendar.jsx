@@ -66,7 +66,7 @@ function buildEvents(apiClasses, lang, onlyUpcoming = false) {
         ? toLocalDateKey(new Date(new Date(c.date + "T12:00:00").getTime() + (c.duration_weeks - 1) * 7 * 86400000))
         : c.date;
       if (lastDate < todayKey) return false;
-      if (onlyUpcoming && c.date < todayKey) return false;
+      if (onlyUpcoming && c.date < todayKey && !c.is_dropin) return false;
       return true;
     })
     .map((c) => {
@@ -133,12 +133,12 @@ function groupByDay(events) {
 export default function UpcomingCalendar() {
   const { t } = useI18n();
   const { lang: langParam } = useParams();
-  const lang = langParam === "fr" ? "fr" : "en";
+  const lang = langParam === "en" ? "en" : "fr";
 
   const [apiClasses, setApiClasses] = useState([]);
   const [apiTroupes, setApiTroupes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [onlyUpcoming, setOnlyUpcoming] = useState(false);
+  const [includeOngoing, setIncludeOngoing] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -151,7 +151,7 @@ export default function UpcomingCalendar() {
     });
   }, []);
 
-  const classEvents = buildEvents(apiClasses, lang, onlyUpcoming);
+  const classEvents = buildEvents(apiClasses, lang, !includeOngoing);
   const troupeEvents = buildTroupeEvents(apiTroupes, lang);
   const events = [...classEvents, ...troupeEvents];
   const byDay = groupByDay(events);
@@ -214,12 +214,12 @@ export default function UpcomingCalendar() {
               <label className="flex items-center gap-2 cursor-pointer select-none mt-1">
                 <input
                   type="checkbox"
-                  checked={onlyUpcoming}
-                  onChange={(e) => setOnlyUpcoming(e.target.checked)}
+                  checked={includeOngoing}
+                  onChange={(e) => setIncludeOngoing(e.target.checked)}
                   className="w-4 h-4 rounded accent-[color:var(--color-scx-primary)] cursor-pointer"
                 />
                 <span className="text-sm text-white/70">
-                  {lang === "fr" ? "À venir seulement" : "Upcoming only"}
+                  {lang === "fr" ? "Inclure les cours en cours" : "Include ongoing classes"}
                 </span>
               </label>
             </div>

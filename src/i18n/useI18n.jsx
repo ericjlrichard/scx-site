@@ -35,7 +35,7 @@ export function useI18n() {
 // Button that swaps /fr/... <-> /en/... without any effects
 export function LangToggle({ className = "" }) {
   const { lang: paramLang } = useParams();
-  const lang = paramLang === "fr" ? "fr" : "en";
+  const lang = paramLang === "en" ? "en" : "fr";
   const other = lang === "fr" ? "en" : "fr";
   const nav = useNavigate();
   const loc = useLocation();

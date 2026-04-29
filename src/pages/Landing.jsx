@@ -57,11 +57,11 @@ export default function Landing() {
 
         {/* Content */}
         <div className="min-h-[100dvh] flex flex-col items-center text-center px-4">
-          {/* Top logo */}
+          {/* Top image */}
           <img
-            src="/logos/SCX_20_ans_blanc.png"
-            alt="20 ans Swing ConneXion"
-            className="pointer-events-none select-none opacity-80 mt-[30vh] md:mt-[18vh] lg:mt-[16vh] max-w-[75vw] md:max-w-[55vw] lg:max-w-[700px]"
+            src={lang === "en" ? "/images/2for1.png" : "/images/2for1_fr.png"}
+            alt={lang === "en" ? "Summer 2-for-1" : "Été 2 pour 1"}
+            className="pointer-events-none select-none mt-[30vh] md:mt-[18vh] lg:mt-[16vh] max-w-[112vw] md:max-w-[82vw] lg:max-w-[1050px]"
           />
 
           {/* CTA + Calendar block near bottom */}
@@ -83,7 +83,7 @@ export default function Landing() {
             </div>
 
             {/* Calendar inside same block, AFTER CTA */}
-            <div className="mt-8">
+            <div id="schedule" className="mt-8">
               <UpcomingCalendar />
             </div>
           </div>

@@ -3,6 +3,7 @@ import { useI18n } from "../i18n/useI18n";
 import PageHero from "../components/PageHero";
 import Footer from "../components/Footer";
 import MetaTags from "../components/MetaTags";
+import UpcomingCalendar from "../components/UpcomingCalendar";
 
 export default function GroupClasses() {
   const { t } = useI18n();
@@ -37,6 +38,10 @@ export default function GroupClasses() {
           },
         ].filter(Boolean)}
       />
+
+      <div className="pt-12" style={{ background: "linear-gradient(180deg, #0f2f44, #0b2536)" }}>
+        <UpcomingCalendar />
+      </div>
 
       <Footer
         bgVar="var(--color-scx-accent)"

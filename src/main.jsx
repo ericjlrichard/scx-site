@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Staff from "./pages/Staff";
 import Registration from "./pages/Registration";
 import SignUp from "./pages/SignUp";
+import SummerSignUp from "./pages/SummerSignUp";
 import Payment from "./pages/Payment";
 import Troupes from "./pages/Troupes";
 import PaymentThanks from "./pages/PaymentThanks";
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
       { path: "staff", element: <Staff /> },
       { path: "register", element: <Registration /> },
       { path: "signup", element: <SignUp /> },
+      { path: "summer", element: <SummerSignUp /> },
       { path: "payment", element: <Payment /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
@@ -60,6 +62,7 @@ const router = createBrowserRouter([
       { path: "staff", element: <Staff /> },
       { path: "register", element: <Registration /> },
       { path: "signup", element: <SignUp /> },
+      { path: "summer", element: <SummerSignUp /> },
       { path: "payment", element: <Payment /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },

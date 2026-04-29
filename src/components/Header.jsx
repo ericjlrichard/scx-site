@@ -66,6 +66,12 @@ export default function Header() {
     },
 
     {
+      key: "schedule",
+      label: t("nav.schedule", "Schedule"),
+      to: `${prefix || "/"}#schedule`,
+    },
+
+    {
       key: "staff",
       label: t("nav.staff", "Our Staff"),
       to: `${prefix}/staff`,
