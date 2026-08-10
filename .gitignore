@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 *.tgz
 .env*
+
+# Runtime-uploaded assets (written by Dome's Assets media library) — keep the
+# folder in git via .gitkeep, but never commit actual uploaded content.
+public/uploads/*
+!public/uploads/.gitkeep
