@@ -1,4 +1,9 @@
-// src/data/staff.js
+// data/staff.js — Static staff list displayed on the Staff page (/staff)
+// Sorted by `order` field in Staff.jsx. To add/remove/reorder staff: edit this file directly.
+// PRIVATE_LINK is the shared Square booking link shown on every staff card.
+
+const PRIVATE_LINK = "https://square.link/to/private-lessons";
+
 export const staff = [
   {
     slug: "maryse-lebeau",
@@ -17,9 +22,8 @@ export const staff = [
         ctaLabel: "Book a private lesson",
       },
     },
-    ctaHref: "https://square.link/to/private-lessons",
+    ctaHref: PRIVATE_LINK,
   },
-
   {
     slug: "michel-mazerolle",
     name: "Michel Mazerolle",
@@ -29,12 +33,15 @@ export const staff = [
       fr: {
         title: "Gardien de la Pulsation",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Pulse Custodian",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "maude-frenette-roy",
@@ -45,12 +52,15 @@ export const staff = [
       fr: {
         title: "Grooveuse en Chef",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Chief Groover",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "raph-desmaison",
@@ -61,12 +71,15 @@ export const staff = [
       fr: {
         title: "Capitaine Rigueur",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Captain Diligence",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "travis-matte",
@@ -77,12 +90,15 @@ export const staff = [
       fr: {
         title: "Superviseur de la Division de Lucidité",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Keepin' It Real Division Supervisor",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "dominique-steneker",
@@ -98,11 +114,11 @@ export const staff = [
       en: {
         title: "Hype Department Manager",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
-        ctaLabel: "Book a private",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
-  ,
   {
     slug: "katya-kogan",
     name: "Katya Kogan",
@@ -117,9 +133,10 @@ export const staff = [
       en: {
         title: "Director of the Spirit Branch",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
-        ctaLabel: "Book a private",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "alyssabouchenak",
@@ -130,12 +147,15 @@ export const staff = [
       fr: {
         title: "Coordonatrice de Motivation",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Motivation Coordinator",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "ashley-de-haas",
@@ -144,14 +164,17 @@ export const staff = [
     order: 4,
     locale: {
       fr: {
-        title: "Chancelière de la Faculté de l’Effervescence",
+        title: "Chancelière de la Faculté de l'Effervescence",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Faculty of Effervescence Chancellor",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
   {
     slug: "mohammad-hajikhani",
@@ -162,14 +185,35 @@ export const staff = [
       fr: {
         title: "Doyen Suprême du Bureau de la Minutie",
         bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
       },
       en: {
         title: "Dean of the Thoroughness Bureau",
         bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
       },
     },
+    ctaHref: PRIVATE_LINK,
   },
-
+  {
+    slug: "camelia-richard",
+    name: "Camélia Richard",
+    image: "/images/staff/staff_camelia.png",
+    order: 19,
+    locale: {
+      fr: {
+        title: "Ministre de l'Espièglerie",
+        bio: "Nos bios s'en viennent bientôt. Ou non. On est pas mal occupé/es ces temps ci - Venez nous jaser autour de la piste de danse pour mieux nous connaître!",
+        ctaLabel: "Réserver un cours privé",
+      },
+      en: {
+        title: "Minister of Mischief",
+        bio: "Our bios are coming soon. Or not! We're pretty busy these days, come and chat us up around the dance floor!",
+        ctaLabel: "Book a private lesson",
+      },
+    },
+    ctaHref: PRIVATE_LINK,
+  },
   {
     slug: "zack-richard",
     name: "Zack Richard",
@@ -187,6 +231,6 @@ export const staff = [
         ctaLabel: "Book a private lesson",
       },
     },
-    ctaHref: "https://square.link/to/private-lessons",
+    ctaHref: PRIVATE_LINK,
   },
 ];
