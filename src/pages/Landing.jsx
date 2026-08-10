@@ -1,10 +1,25 @@
+// Landing.jsx — Homepage (swingconnexion.com / swingconnexion.com/en)
+//
+// Layout (top to bottom):
+//   1. MercredisSwingEvent  — temporary promo banner (auto-hides after its expiry date)
+//   2. Hero section         — full-screen background photo + promo image + signup CTA
+//   3. UpcomingCalendar     — live class grid fetched from the API
+//   4. Footer
+//
+// Routing: served at "/" (no lang) and "/:lang" (e.g. "/en").
+// `prefix` builds locale-aware internal links (/fr/signup vs /signup).
+
+import { useState, useEffect } from "react";
 import Button from "../components/Button";
 import { useI18n } from "../i18n/useI18n";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import UpcomingCalendar from "../components/UpcomingCalendar";
 import MetaTags from "../components/MetaTags";
+import MercredisSwingEvent from "../components/MercredisSwingEvent";
+import SplashCarousel from "../components/SplashCarousel";
 
+// Google structured data for SEO — helps search engines show rich results (address, phone, etc.)
 const SCHEMA = {
   "@context": "https://schema.org",
   "@type": ["LocalBusiness", "DanceSchool"],
@@ -38,11 +53,26 @@ export default function Landing() {
   const { t } = useI18n();
   const { lang } = useParams();
   const prefix = lang ? `/${lang}` : "";
+  const locale = lang === "en" ? "en" : "fr";
+
+  // `is_pass` classes get their own quick-signup buttons in the hero (skips class-picker step in SignUp)
+  const [passes, setPasses] = useState([]);
+  useEffect(() => {
+    fetch("https://api.swingconnexion.com/public/classes")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPasses(data.filter((c) => c.is_pass)); })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
       <MetaTags i18nKey="meta.landing" path="/" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SCHEMA) }} />
+
+      <MercredisSwingEvent locale={locale} />
+
+      {/* -mt-25 pulls the hero up so it visually overlaps the MercredisSwingEvent banner.
+          When the event is hidden (past expiry), the negative margin creates extra breathing room above the hero. */}
       <section className="relative isolate -mt-25">
         {/* Background image + overlay */}
         <div className="absolute inset-0 -z-10">
@@ -55,14 +85,12 @@ export default function Landing() {
           <div className="absolute inset-0 bg-black/35" aria-hidden />
         </div>
 
-        {/* Content */}
-        <div className="min-h-[100dvh] flex flex-col items-center text-center px-4">
-          {/* Top image */}
-          <img
-            src={lang === "en" ? "/images/2for1.png" : "/images/2for1_fr.png"}
-            alt={lang === "en" ? "Summer 2-for-1" : "Été 2 pour 1"}
-            className="pointer-events-none select-none mt-[30vh] md:mt-[18vh] lg:mt-[16vh] max-w-[112vw] md:max-w-[82vw] lg:max-w-[1050px]"
-          />
+        {/* Content — pt-24 clears the sticky nav bar on all screen sizes.
+            The section is pulled up ~100px by -mt-25, so without this padding the top
+            of the promo image sits behind the nav rather than below it. */}
+        <div className="min-h-[100dvh] flex flex-col items-center text-center px-4 pt-24">
+          {/* Homepage splash(es) — admin-managed via Dome, auto-rotates when more than one is active */}
+          <SplashCarousel lang={lang} />
 
           {/* CTA + Calendar block near bottom */}
           <div className="mt-auto w-full max-w-6xl pb-[6vh]">
@@ -81,6 +109,21 @@ export default function Landing() {
                 </Button>
               </div>
             </div>
+
+            {/* Pass CTA buttons — one per active pass */}
+            {passes.length > 0 && (
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                {passes.map((pass) => (
+                  <Link
+                    key={pass.id}
+                    to={`${prefix}/signup?class=${pass.id}`}
+                    className="rounded-full px-6 py-2.5 text-sm font-semibold border border-white/40 text-white hover:bg-white/10 transition-colors"
+                  >
+                    {pass.name?.[locale] || pass.name?.fr || pass.name?.en}
+                  </Link>
+                ))}
+              </div>
+            )}
 
             {/* Calendar inside same block, AFTER CTA */}
             <div id="schedule" className="mt-8">
