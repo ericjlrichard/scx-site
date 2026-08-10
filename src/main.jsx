@@ -1,3 +1,11 @@
+// main.jsx — App entry point: router setup + React root mount
+//
+// Routing strategy: every route is duplicated at "/" and "/:lang".
+// When :lang is present (e.g. /en/signup), all components read it via useParams()
+// and build locale-aware links with `prefix = lang ? \`/${lang}\` : ""`.
+// Default locale is French — no lang prefix means FR.
+// Only "en" is currently used as an explicit lang prefix.
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -10,15 +18,12 @@ import IntroClasses from "./pages/IntroClasses";
 import Privates from "./pages/Privates";
 import Contact from "./pages/Contact";
 import Staff from "./pages/Staff";
-import Registration from "./pages/Registration";
 import SignUp from "./pages/SignUp";
 import SummerSignUp from "./pages/SummerSignUp";
-import Payment from "./pages/Payment";
 import Troupes from "./pages/Troupes";
 import PaymentThanks from "./pages/PaymentThanks";
 import CodeOfConduct from "./pages/CodeOfConduct";
 import NotFound from "./pages/NotFound";
-import { PopupProvider } from "./components/Popup";
 
 const router = createBrowserRouter([
   // Plain routes (no language in URL)
@@ -34,10 +39,8 @@ const router = createBrowserRouter([
       { path: "privatelessons", element: <Privates /> },
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
-      { path: "register", element: <Registration /> },
       { path: "signup", element: <SignUp /> },
       { path: "summer", element: <SummerSignUp /> },
-      { path: "payment", element: <Payment /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
@@ -60,10 +63,8 @@ const router = createBrowserRouter([
       { path: "privatelessons", element: <Privates /> },
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
-      { path: "register", element: <Registration /> },
       { path: "signup", element: <SignUp /> },
       { path: "summer", element: <SummerSignUp /> },
-      { path: "payment", element: <Payment /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
@@ -75,7 +76,5 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <PopupProvider>
-    <RouterProvider router={router} />
-  </PopupProvider>,
+  <RouterProvider router={router} />
 );
