@@ -1,4 +1,29 @@
-import { useState, useEffect, useRef } from "react";
+// SignUp.jsx — PRIMARY class registration flow (current system, not legacy GAS)
+//
+// 3-step wizard:
+//   1. "classes"  — browse and pick classes (or pre-select via ?class=ID URL param)
+//   2. "info"     — contact info + dance role (lead/follow/versatile)
+//   3. "review"   — pricing summary, promo codes, monthly billing option, submit
+//
+// After submit: a Square payment button is shown — clicking it calls /public/square-link
+//   which creates a Square invoice and redirects the user to pay by card.
+//   Monthly payment option skips Square and is handled later by an admin.
+//
+// Key features:
+//   - Dome cross-auth: users logged into Dome (admin tool) auto-fill the form via a
+//     cookie (dome_signup on .swingconnexion.com) or ?domeToken= URL param
+//   - Summer 2-for-1: if exactly 2 summer classes are selected, the second one is free
+//   - is_pass classes bypass the class-listing step and jump straight to "info"
+//   - Drop-in: select individual week dates instead of the full block
+//   - Promo codes: validated via API, multiple can stack, apply per-class or order-wide
+//   - Mercredis Swing discount: $20 off "Swing 1" classes when the mercredi-swing API flag is active
+//   - reCAPTCHA v3 for bot protection (loaded lazily on mount)
+//   - honeypot: hidden "website" field — bots fill it, humans don't; server rejects if set
+//   - elapsedMs: time since page load, sent to server to detect suspiciously-fast bots
+//
+// OLD registration flow is in Registration.jsx (Google Apps Script backend) — no longer used.
+
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
 import PageHero from "../components/PageHero";
@@ -8,9 +33,12 @@ import Button from "../components/Button";
 import Spinner from "../components/Spinner";
 
 const API = "https://api.swingconnexion.com/public";
-const REBATE_AMOUNT = 40;
+const GST_RATE = 0.05;
+const QST_RATE = 0.09975;
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
+// Dome cross-auth cookie: set on .swingconnexion.com so it's accessible on both
+// swingconnexion.com (public site) and dome.swingconnexion.com (admin tool).
 const COOKIE_NAME = "dome_signup";
 const COOKIE_DOMAIN = ".swingconnexion.com";
 
@@ -454,8 +482,17 @@ export default function SignUp() {
 
   // Mercredis Swing mode
   const [mercredisSwing, setMercredisSwing] = useState(false);
+  const [rebateAmount, setRebateAmount] = useState(20);
   useEffect(() => {
     fetch(`${API}/mercredi-swing`).then((r) => r.json()).then((d) => setMercredisSwing(!!d.active)).catch(() => {});
+    fetch(`${API}/student-rebate`).then((r) => r.json()).then((d) => setRebateAmount(d.amount)).catch(() => {});
+  }, []);
+
+  // Liability waiver — required before submitting. Text is editable from Dome → Email Templates for now.
+  const [waiverText, setWaiverText] = useState({ text_fr: "", text_en: "" });
+  const [waiverAccepted, setWaiverAccepted] = useState(false);
+  useEffect(() => {
+    fetch(`${API}/waiver-text`).then((r) => r.json()).then(setWaiverText).catch(() => {});
   }, []);
 
   // Promo codes (multiple can stack)
@@ -474,10 +511,11 @@ export default function SignUp() {
     fetch(`${API}/classes`)
       .then((r) => r.json())
       .then((data) => {
-        // Only show upcoming / current classes
+        // Only show upcoming / current classes (never show passes in regular listing)
         const today = new Date().toISOString().slice(0, 10);
         const filtered = data.filter((c) => {
-            if (!c.date) return true;
+            if (c.is_pass) return false;
+            if (!c.date) return false;
             const lastDate = c.duration_weeks
               ? new Date(
                   new Date(c.date + "T12:00:00").getTime() +
@@ -498,6 +536,14 @@ export default function SignUp() {
         const preselect = searchParams.get("class");
         if (preselect) {
           const id = Number(preselect);
+          // Check passes separately (filtered out of `filtered` above)
+          const passMatch = data.find((c) => c.id === id && c.is_pass);
+          if (passMatch) {
+            setClasses([passMatch]);
+            setSelectedIds(new Set([id]));
+            setStep("info");
+            return;
+          }
           const match = filtered.find((c) => c.id === id);
           if (match) {
             setSelectedIds(new Set([id]));
@@ -516,7 +562,18 @@ export default function SignUp() {
 
   // Computed totals
   const selectedClasses = classes.filter((c) => selectedIds.has(c.id));
+  // summerBundle: exactly 2 summer classes selected → second one renders as $0 (2-for-1 promo)
   const summerBundle = selectedClasses.length === 2 && selectedClasses.every((c) => !!c.is_summer);
+  // isPassMode: a pass was pre-selected via ?class=ID — skips class listing, goes straight to info step
+  const isPassMode = selectedClasses.length === 1 && !!selectedClasses[0]?.is_pass;
+
+  const contributorRebatePct = domeUser?.class_rebate > 0 ? Number(domeUser.class_rebate) : 0;
+
+  function getContributorDiscount(cls) {
+    if (!contributorRebatePct) return 0;
+    const price = Number(cls.price) || 0;
+    return parseFloat((price * contributorRebatePct / 100).toFixed(2));
+  }
 
   function getMercredisDiscount(cls) {
     if (!mercredisSwing) return 0;
@@ -545,13 +602,14 @@ export default function SignUp() {
   }, 0);
 
   const total = selectedClasses.reduce((sum, c, idx) => {
-    if (summerBundle && idx === 1) return sum; // second summer class is free
+    if (summerBundle && idx === 1) return sum; // 2-for-1: second summer class always free
     const price = Number(c.price) || 0;
     const classRebate = Number(c.rebate) || 0;
-    const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+    const studentRebateAmt = studentRebate ? Math.min(rebateAmount, price) : 0;
     const promo = getPromoDiscount(c);
     const mercredi = getMercredisDiscount(c);
-    return sum + Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi);
+    const contributor = getContributorDiscount(c);
+    return sum + Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi - contributor);
   }, 0) + dropinTotal;
 
   function setField(key, val) {
@@ -564,7 +622,7 @@ export default function SignUp() {
     if (!form.firstName.trim()) e.firstName = locale === "fr" ? "Requis" : "Required";
     if (!form.lastName.trim()) e.lastName = locale === "fr" ? "Requis" : "Required";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = locale === "fr" ? "Courriel invalide" : "Invalid email";
-    if (!form.role) e.role = locale === "fr" ? "Veuillez choisir un rôle" : "Please choose a role";
+    if (!isPassMode && !form.role) e.role = locale === "fr" ? "Veuillez choisir un rôle" : "Please choose a role";
     return e;
   }
 
@@ -618,8 +676,8 @@ export default function SignUp() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          honeypot: "",
-          elapsedMs: Date.now() - loadTime,
+          honeypot: "",                       // always blank from this client; server rejects if non-empty
+          elapsedMs: Date.now() - loadTime,   // time since page load; server flags very fast submits as bots
           recaptchaToken,
           domeToken: domeToken || null,
           firstName: form.firstName,
@@ -635,6 +693,7 @@ export default function SignUp() {
           payMonthly,
           note,
           promoCodes: appliedPromos.map((p) => p.code),
+          waiverAccepted,
         }),
       });
       const data = await res.json();
@@ -746,69 +805,111 @@ export default function SignUp() {
                 </div>
               )}
 
-              {/* Square payment option */}
-              {(() => {
-                const squareTotal = submitResult?.created?.reduce((sum, r) => sum + (r.price || 0), 0) ?? 0;
-                if (squareTotal <= 0) return null;
-                const squareTotalFmt = `$${squareTotal.toFixed(2)}`;
-                return (
-                  <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 px-5 py-5 text-center">
-                    <p className="text-sm text-white/70 mb-1">
-                      {payMonthly
-                        ? (locale === "fr"
-                          ? "Payez le premier versement maintenant par carte via Square :"
-                          : "Pay the first installment now by card via Square:")
-                        : (locale === "fr"
-                          ? "Vous pouvez payer immédiatement par carte de crédit via Square :"
-                          : "You can pay right now by credit card via Square:")}
-                    </p>
-                    {payMonthly && (
-                      <p className="text-xs text-white/40 mb-4">
-                        {locale === "fr"
-                          ? "Les 2 versements suivants seront facturés mensuellement."
-                          : "The 2 remaining payments will be invoiced monthly."}
+              {/* Contributor balance summary — replaces Square button */}
+              {submitResult?.contributorStats ? (
+                <div className="mt-6 rounded-2xl bg-amber-900/30 border border-amber-500/30 px-5 py-5">
+                  <p className="text-xs uppercase tracking-wide text-amber-400/70 font-semibold mb-3">
+                    {locale === "fr" ? "Solde contributeur·trice SCX" : "SCX Contributor balance"}
+                  </p>
+                  {(() => {
+                    const charged = submitResult.created.reduce((s, r) => s + (r.price || 0), 0);
+                    const { remainder, rebate_remaining } = submitResult.contributorStats;
+                    return (
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-white/70">{locale === "fr" ? "Prélevé ce soir" : "Charged tonight"}</span>
+                          <span className="text-white font-semibold">−${charged.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-amber-500/20 pt-2">
+                          <span className="text-white/70">{locale === "fr" ? "Solde restant" : "Remaining balance"}</span>
+                          <span className={`font-bold ${remainder < 0 ? "text-red-400" : "text-amber-300"}`}>
+                            ${remainder.toFixed(2)}
+                          </span>
+                        </div>
+                        {rebate_remaining > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-white/50 text-xs">{locale === "fr" ? "Rabais restant (10%)" : "Remaining rebate (10%)"}</span>
+                            <span className="text-white/50 text-xs">${rebate_remaining.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                /* Square payment option — non-contributors only */
+                (() => {
+                  const squareTotal = submitResult?.created?.reduce((sum, r) => sum + (r.price || 0), 0) ?? 0;
+                  if (squareTotal <= 0) return null;
+                  const squareTotalFmt = `$${squareTotal.toFixed(2)}`;
+                  return (
+                    <div className="mt-6 rounded-2xl bg-white/5 border border-white/10 px-5 py-5 text-center">
+                      <p className="text-sm text-white/70 mb-1">
+                        {payMonthly
+                          ? (locale === "fr"
+                            ? "Payez le premier versement maintenant par carte via Square :"
+                            : "Pay the first installment now by card via Square:")
+                          : (locale === "fr"
+                            ? "Vous pouvez payer immédiatement par carte de crédit via Square :"
+                            : "You can pay right now by credit card via Square:")}
                       </p>
-                    )}
-                    {!payMonthly && <div className="mb-4" />}
-                    {squareError && <p className="text-red-400 text-xs mb-3">{squareError}</p>}
-                    <Button
-                      bgVar="var(--color-scx-primary)"
-                      fgVar="#fff"
-                      className="w-full justify-center"
-                      onClick={() => goToSquare(submitResult)}
-                      disabled={squareLoading}
-                    >
-                      {squareLoading ? (
-                        <span className="inline-flex items-center gap-2">
-                          <Spinner size={14} />
-                          {locale === "fr" ? "Redirection…" : "Redirecting…"}
-                        </span>
-                      ) : payMonthly ? (
-                        locale === "fr"
-                          ? `Payer le 1er versement (${squareTotalFmt}) →`
-                          : `Pay 1st installment (${squareTotalFmt}) →`
-                      ) : (
-                        locale === "fr"
-                          ? `Payer par carte (${squareTotalFmt}) →`
-                          : `Pay by card (${squareTotalFmt}) →`
+                      {payMonthly && (
+                        <p className="text-xs text-white/40 mb-4">
+                          {locale === "fr"
+                            ? "Les 2 versements suivants seront facturés mensuellement."
+                            : "The 2 remaining payments will be invoiced monthly."}
+                        </p>
                       )}
-                    </Button>
-                    <p className="text-xs text-white/40 mt-3">
-                      {locale === "fr"
-                        ? "Des frais de traitement peuvent s'appliquer."
-                        : "Processing fees may apply."}
-                    </p>
-                  </div>
-                );
-              })()}
+                      {!payMonthly && <div className="mb-4" />}
+                      {squareError && <p className="text-red-400 text-xs mb-3">{squareError}</p>}
+                      <Button
+                        bgVar="var(--color-scx-primary)"
+                        fgVar="#fff"
+                        className="w-full justify-center"
+                        onClick={() => goToSquare(submitResult)}
+                        disabled={squareLoading}
+                      >
+                        {squareLoading ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Spinner size={14} />
+                            {locale === "fr" ? "Redirection…" : "Redirecting…"}
+                          </span>
+                        ) : payMonthly ? (
+                          locale === "fr"
+                            ? `Payer le 1er versement (${squareTotalFmt}) →`
+                            : `Pay 1st installment (${squareTotalFmt}) →`
+                        ) : (
+                          locale === "fr"
+                            ? `Payer par carte (${squareTotalFmt}) →`
+                            : `Pay by card (${squareTotalFmt}) →`
+                        )}
+                      </Button>
+                      <p className="text-xs text-white/40 mt-3">
+                        {locale === "fr"
+                          ? "Des frais de traitement peuvent s'appliquer."
+                          : "Processing fees may apply."}
+                      </p>
+                    </div>
+                  );
+                })()
+              )}
 
               <div className="text-center mt-4">
-                <a
-                  href="https://dome.swingconnexion.com/my-invoices"
-                  className="text-sm text-[var(--color-scx-primary)] hover:underline"
-                >
-                  {locale === "fr" ? "Voir mes factures sur Dome →" : "View my invoices on Dome →"}
-                </a>
+                {submitResult?.contributorStats && domeUser?.idstudents ? (
+                  <a
+                    href={`https://dome.swingconnexion.com/contributors/${domeUser.idstudents}`}
+                    className="text-sm text-amber-400 hover:underline"
+                  >
+                    {locale === "fr" ? "Voir mon compte contributeur·trice →" : "View my contributor account →"}
+                  </a>
+                ) : (
+                  <a
+                    href="https://dome.swingconnexion.com/my-invoices"
+                    className="text-sm text-[var(--color-scx-primary)] hover:underline"
+                  >
+                    {locale === "fr" ? "Voir mes factures sur Dome →" : "View my invoices on Dome →"}
+                  </a>
+                )}
               </div>
             </div>
           </Container>
@@ -989,19 +1090,21 @@ export default function SignUp() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-2">
-                        {locale === "fr" ? "Rôle" : "Role"} *
-                      </label>
-                      <div className="flex gap-3">
-                        {["lead", "follow", "versatile"].map((r) => (
-                          <RoleButton key={r} value={r} selected={form.role === r} onClick={() => setField("role", r)}>
-                            {roleLabels[r]}
-                          </RoleButton>
-                        ))}
+                    {!isPassMode && (
+                      <div>
+                        <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-2">
+                          {locale === "fr" ? "Rôle" : "Role"} *
+                        </label>
+                        <div className="flex gap-3">
+                          {["lead", "follow", "versatile"].map((r) => (
+                            <RoleButton key={r} value={r} selected={form.role === r} onClick={() => setField("role", r)}>
+                              {roleLabels[r]}
+                            </RoleButton>
+                          ))}
+                        </div>
+                        {errors.role && <p className="mt-1.5 text-xs text-red-400">{errors.role}</p>}
                       </div>
-                      {errors.role && <p className="mt-1.5 text-xs text-red-400">{errors.role}</p>}
-                    </div>
+                    )}
 
                     <div className="flex gap-3 pt-2">
                       <Button bgVar="transparent" fgVar="#fff" variant="outline" className="flex-1" onClick={() => setStep("classes")}>
@@ -1180,9 +1283,11 @@ export default function SignUp() {
                   <p className="text-white font-semibold">{form.firstName} {form.lastName}</p>
                   <p className="text-white/70 text-sm">{form.email}</p>
                   {form.phone && <p className="text-white/70 text-sm">{form.phone}</p>}
-                  <p className="text-white/70 text-sm capitalize mt-1">
-                    {locale === "fr" ? "Rôle : " : "Role: "}{form.role}
-                  </p>
+                  {!isPassMode && (
+                    <p className="text-white/70 text-sm capitalize mt-1">
+                      {locale === "fr" ? "Rôle : " : "Role: "}{form.role}
+                    </p>
+                  )}
                 </div>
 
                 {/* Selected classes */}
@@ -1220,10 +1325,11 @@ export default function SignUp() {
                         );
                       }
                       const classRebate = Number(cls.rebate) || 0;
-                      const studentRebateAmt = studentRebate ? Math.min(REBATE_AMOUNT, price) : 0;
+                      const studentRebateAmt = studentRebate ? Math.min(rebateAmount, price) : 0;
                       const promo = getPromoDiscount(cls);
                       const mercredi = getMercredisDiscount(cls);
-                      const final = Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi);
+                      const contributor = getContributorDiscount(cls);
+                      const final = Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi - contributor);
                       const hasDiscount = price !== final;
                       return (
                         <div key={cls.id} className="flex justify-between items-center text-sm">
@@ -1267,48 +1373,69 @@ export default function SignUp() {
                   </div>
                 </div>
 
-                {/* Student rebate */}
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={studentRebate}
-                    onChange={(e) => setStudentRebate(e.target.checked)}
-                    className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
-                  />
-                  <div>
-                    <span className="text-sm text-white font-medium">
-                      {locale === "fr" ? "Rabais étudiant (-$40 / cours)" : "Student rebate (-$40 / class)"}
-                    </span>
-                    <p className="text-xs text-white/50 mt-0.5">
-                      {locale === "fr"
-                        ? "Pour les étudiant·e·s à temps plein. Jamais sous $0."
-                        : "For full-time students. Never below $0."}
-                    </p>
+                {/* Contributor rebate badge — auto-applied, informational only */}
+                {contributorRebatePct > 0 && !isPassMode && (
+                  <div className="flex items-center gap-3 rounded-2xl bg-amber-900/30 border border-amber-500/30 px-4 py-3">
+                    <span className="text-amber-400 text-base">✦</span>
+                    <div>
+                      <span className="text-sm text-amber-200 font-medium">
+                        {locale === "fr"
+                          ? `Rabais Contributeur·trice SCX (−${contributorRebatePct}%)`
+                          : `SCX Contributor rebate (−${contributorRebatePct}%)`}
+                      </span>
+                      <p className="text-xs text-amber-400/70 mt-0.5">
+                        {locale === "fr" ? "Appliqué automatiquement." : "Applied automatically."}
+                      </p>
+                    </div>
                   </div>
-                </label>
+                )}
 
-                {/* Monthly payments */}
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={payMonthly}
-                    onChange={(e) => setPayMonthly(e.target.checked)}
-                    className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
-                  />
-                  <div>
-                    <span className="text-sm text-white font-medium">
-                      {locale === "fr" ? "Payer en 3 versements mensuels" : "Pay in 3 monthly payments"}
-                    </span>
-                    <p className="text-xs text-white/50 mt-0.5">
-                      {locale === "fr"
-                        ? "Vous recevrez une facture par mois pendant 3 mois."
-                        : "You'll receive one invoice per month for 3 months."}
-                    </p>
-                  </div>
-                </label>
+                {/* Student rebate — not applicable for passes or when rebate is $0 */}
+                {!isPassMode && rebateAmount > 0 && (
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={studentRebate}
+                      onChange={(e) => setStudentRebate(e.target.checked)}
+                      className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                    />
+                    <div>
+                      <span className="text-sm text-white font-medium">
+                        {locale === "fr" ? `Rabais étudiant (-$${rebateAmount} / cours)` : `Student rebate (-$${rebateAmount} / class)`}
+                      </span>
+                      <p className="text-xs text-white/50 mt-0.5">
+                        {locale === "fr"
+                          ? "Pour les étudiant·e·s à temps plein. Jamais sous $0."
+                          : "For full-time students. Never below $0."}
+                      </p>
+                    </div>
+                  </label>
+                )}
 
-                {/* Promo codes */}
-                <div className="space-y-2">
+                {/* Monthly payments — summer projects only */}
+                {!isPassMode && selectedClasses.some((c) => !!c.is_summer) && (
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={payMonthly}
+                      onChange={(e) => setPayMonthly(e.target.checked)}
+                      className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                    />
+                    <div>
+                      <span className="text-sm text-white font-medium">
+                        {locale === "fr" ? "Payer en 3 versements mensuels" : "Pay in 3 monthly payments"}
+                      </span>
+                      <p className="text-xs text-white/50 mt-0.5">
+                        {locale === "fr"
+                          ? "Vous recevrez une facture par mois pendant 3 mois."
+                          : "You'll receive one invoice per month for 3 months."}
+                      </p>
+                    </div>
+                  </label>
+                )}
+
+                {/* Promo codes — not applicable for passes */}
+                {!isPassMode && <div className="space-y-2">
                   {appliedPromos.map((p) => (
                     <div key={p.code} className="flex items-center justify-between rounded-2xl bg-green-900/40 border border-green-500/30 px-4 py-3">
                       <div className="text-sm">
@@ -1352,7 +1479,7 @@ export default function SignUp() {
                     </div>
                     {promoError && <p className="text-red-400 text-xs px-1">{promoError}</p>}
                   </div>
-                </div>
+                </div>}
 
                 {/* Note */}
                 <div>
@@ -1368,15 +1495,56 @@ export default function SignUp() {
                   />
                 </div>
 
-                {/* Total */}
-                <div className="rounded-2xl bg-[var(--color-scx-primary)]/20 border border-[var(--color-scx-primary)]/40 px-5 py-4 flex items-center justify-between">
-                  <span className="font-bold text-white">
-                    {locale === "fr" ? "Total" : "Total"}
-                  </span>
-                  <span className="text-2xl font-extrabold text-white">
-                    ${total.toFixed(2)} <span className="text-sm font-normal text-white/60">CAD</span>
-                  </span>
+                {/* Tax breakdown + Total */}
+                <div className="rounded-2xl bg-[var(--color-scx-primary)]/20 border border-[var(--color-scx-primary)]/40 px-5 py-4 space-y-2">
+                  {(() => {
+                    const gst = parseFloat((total * GST_RATE).toFixed(2));
+                    const qst = parseFloat((total * QST_RATE).toFixed(2));
+                    const grandTotal = parseFloat((total + gst + qst).toFixed(2));
+                    return (
+                      <>
+                        <div className="flex justify-between text-sm text-white/60">
+                          <span>{locale === "fr" ? "Sous-total" : "Subtotal"}</span>
+                          <span>${total.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-white/60">
+                          <span>TPS / GST (5%)</span>
+                          <span>${gst.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm text-white/60">
+                          <span>TVQ / QST (9.975%)</span>
+                          <span>${qst.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-white/20">
+                          <span className="font-bold text-white">Total</span>
+                          <span className="text-2xl font-extrabold text-white">
+                            ${grandTotal.toFixed(2)} <span className="text-sm font-normal text-white/60">CAD</span>
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
+
+                {/* Liability waiver — required, text editable from Dome */}
+                {(waiverText.text_fr || waiverText.text_en) && (
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-3">
+                    <p className="text-xs text-white/60 whitespace-pre-line leading-relaxed">
+                      {locale === "fr" ? waiverText.text_fr : waiverText.text_en}
+                    </p>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={waiverAccepted}
+                        onChange={(e) => setWaiverAccepted(e.target.checked)}
+                        className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                      />
+                      <span className="text-sm text-white font-medium">
+                        {locale === "fr" ? "J'ai lu et j'accepte" : "I have read and accept"} <span className="text-red-400">*</span>
+                      </span>
+                    </label>
+                  </div>
+                )}
 
                 {/* Honeypot — hidden from humans, bots fill it */}
                 <input
@@ -1409,7 +1577,7 @@ export default function SignUp() {
                     fgVar="#fff"
                     className="flex-1"
                     onClick={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || !waiverAccepted}
                   >
                     {submitting ? (
                       <span className="inline-flex items-center gap-2">

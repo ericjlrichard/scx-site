@@ -1,21 +1,18 @@
+// Troupes.jsx — "Summer Projects" page (/troupes)
+// Shows two categories fetched from the API:
+//   - Summer classes  (GET /public/classes filtered to is_summer && !is_pass)
+//   - Summer troupes  (GET /public/summer-troupes — performance groups like Blues Troupe)
+// Summer class cards link to /signup?class=ID (SignUp.jsx).
+// Summer troupes are informational only on this page; registration is via SummerSignUp.jsx.
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
 import PageHero from "../components/PageHero";
 import Footer from "../components/Footer";
 import MetaTags from "../components/MetaTags";
 
-function formatCoaches(coaches, isFr) {
-  if (!coaches) return null;
-  const names = coaches.split(",").map((n) => n.trim()).filter(Boolean);
-  if (names.length === 0) return null;
-  const label = isFr ? "Entraînée par" : "Coached by";
-  if (names.length === 1) return `${label} ${names[0]}`;
-  const last = names[names.length - 1];
-  const rest = names.slice(0, -1).join(", ");
-  const and = isFr ? "et" : "and";
-  return `${label} ${rest} ${and} ${last}`;
-}
+const API = "https://api.swingconnexion.com/public";
 
 function formatTime(t) {
   if (!t) return "";
@@ -26,64 +23,46 @@ function formatTime(t) {
   return `${display}:${m} ${ampm}`;
 }
 
-function formatDuration(minutes) {
-  if (!minutes) return "";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h && m) return `${h}h${String(m).padStart(2, "0")}`;
-  if (h) return `${h}h`;
-  return `${m}min`;
+const DAY_NAMES_FR = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const DAY_NAMES_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function getDayName(dateStr, isFr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T12:00:00");
+  return (isFr ? DAY_NAMES_FR : DAY_NAMES_EN)[d.getDay()];
 }
 
-const DAY_NAMES_EN = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const DAY_NAMES_FR = [
-  "Dimanche",
-  "Lundi",
-  "Mardi",
-  "Mercredi",
-  "Jeudi",
-  "Vendredi",
-  "Samedi",
-];
-
-function getDayName(dateStr, lang) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  const names = lang === "fr" ? DAY_NAMES_FR : DAY_NAMES_EN;
-  return names[d.getUTCDay()];
+function ProjectCard({ children }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 flex flex-col gap-3 backdrop-blur-sm">
+      {children}
+    </div>
+  );
 }
 
 export default function Troupes() {
   const { t } = useI18n();
   const { lang } = useParams();
-  const isFr =
-    lang === "fr" ||
-    (!lang &&
-      typeof window !== "undefined" &&
-      navigator.language.startsWith("fr"));
+  const isFr = lang === "fr" || (!lang && typeof window !== "undefined" && navigator.language.startsWith("fr"));
+  const locale = isFr ? "fr" : "en";
+  const prefix = lang ? `/${lang}` : "";
 
-  const [troupes, setTroupes] = useState([]);
+  const [summerClasses, setSummerClasses] = useState([]);
+  const [summerTroupes, setSummerTroupes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://api.swingconnexion.com/public/troupes")
-      .then((r) => r.json())
-      .then((data) => {
-        setTroupes(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    Promise.all([
+      fetch(`${API}/classes`).then((r) => r.json()).catch(() => []),
+      fetch(`${API}/summer-troupes`).then((r) => r.json()).catch(() => []),
+    ]).then(([classes, troupes]) => {
+      setSummerClasses(Array.isArray(classes) ? classes.filter((c) => c.is_summer && !c.is_pass) : []);
+      setSummerTroupes(Array.isArray(troupes) ? troupes : []);
+      setLoading(false);
+    });
   }, []);
 
-  const hero = t("pages.troupes.hero", {});
+  const hasContent = summerClasses.length > 0 || summerTroupes.length > 0;
 
   return (
     <>
@@ -93,19 +72,18 @@ export default function Troupes() {
         className="-mt-25"
         imageSrc="/images/troupe_blues.jpg"
         sideImageSrc="/images/troupe_solo.jpg"
-        imageAlt="SCX Troupes"
+        imageAlt="SCX Summer Projects"
         bandColorVar="var(--color-scx-primary)"
-        titleLines={hero.titleLines || (isFr ? ["TROUPES"] : ["TROUPES"])}
+        titleLines={isFr ? ["PROJETS D'ÉTÉ"] : ["SUMMER PROJECTS"]}
         description={
-          hero.desc ||
-          (isFr
-            ? "Nos troupes de performance offrent une expérience de danse avancée pour ceux qui veulent aller plus loin. Intéressé·e? Écrivez-nous!"
-            : "Our performance troupes offer an advanced dance experience for those who want to go further. Interested? Write to us!")
+          isFr
+            ? "Inscrivez-vous à 2 projets d'été et profitez du tarif 2 pour 1 !"
+            : "Sign up for 2 summer projects and get the 2-for-1 rate!"
         }
         actions={[
           {
-            href: (lang ? `/${lang}` : "") + "/contact",
-            label: isFr ? "Nous contacter" : "Get in touch",
+            href: `${prefix}/signup`,
+            label: isFr ? "S'inscrire" : "Register",
             bgVar: "var(--color-scx-secondary)",
             fgVar: "#fff",
             internal: true,
@@ -113,62 +91,98 @@ export default function Troupes() {
         ]}
       />
 
-      <section className="max-w-4xl mx-auto px-6 py-12">
-        {loading ? (
-          <p className="text-center text-scx-muted">
-            {isFr ? "Chargement…" : "Loading…"}
-          </p>
-        ) : troupes.length === 0 ? (
-          <p className="text-center text-scx-muted">
-            {isFr ? "Aucune troupe disponible." : "No troupes available."}
-          </p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2">
-            {troupes.map((troupe) => (
-              <div
-                key={troupe.idtroupes}
-                className="rounded-2xl border border-scx-ink/10 bg-white shadow-sm p-6 flex flex-col gap-2"
-              >
-                <h2 className="text-xl font-bold text-scx-primary">
-                  {troupe.name_en}
-                </h2>
-                <div className="text-sm text-scx-muted flex flex-col gap-1">
-                  {troupe.start_date && (
-                    <span>
-                      {getDayName(troupe.start_date, lang)} &mdash;{" "}
-                      {formatTime(troupe.time)}
-                      {troupe.duration
-                        ? ` (${formatDuration(troupe.duration)})`
-                        : ""}
-                    </span>
-                  )}
-                  {!troupe.end_date && (
-                    <span className="inline-block mt-1 text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                      {isFr ? "Ouvert" : "Open"}
-                    </span>
-                  )}
-                  {(isFr ? troupe.desc_fr : troupe.desc_en) && (
-                    <p className="mt-2 text-scx-ink/70 text-sm leading-relaxed">
-                      {isFr ? troupe.desc_fr : troupe.desc_en}
-                    </p>
-                  )}
-                  {formatCoaches(troupe.coaches, isFr) && (
-                    <p className="mt-1 text-xs text-scx-muted italic">
-                      {formatCoaches(troupe.coaches, isFr)}
-                    </p>
-                  )}
+      <section className="bg-[color:var(--color-scx-secondary)] text-white min-h-[40vh]">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          {loading ? (
+            <p className="text-center text-white/50">{isFr ? "Chargement…" : "Loading…"}</p>
+          ) : !hasContent ? (
+            <p className="text-center text-white/50">
+              {isFr ? "Aucun projet d'été pour le moment." : "No summer projects at the moment."}
+            </p>
+          ) : (
+            <div className="space-y-10">
+              {/* Summer classes */}
+              {summerClasses.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-scx-primary)" }}>
+                    {isFr ? "Cours d'été" : "Summer Classes"}
+                  </h2>
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {summerClasses.map((cls) => {
+                      const name = cls.name?.[locale] || cls.name?.fr || "";
+                      const desc = cls.desc?.[locale] || cls.desc?.fr || "";
+                      const day = getDayName(cls.date, isFr);
+                      const price = Number(cls.price) || 0;
+                      return (
+                        <ProjectCard key={cls.id}>
+                          <h3 className="text-lg font-bold text-white">{name}</h3>
+                          {(day || cls.time) && (
+                            <p className="text-sm text-white/60">
+                              {day}{day && cls.time ? " — " : ""}{formatTime(cls.time)}
+                              {cls.duration_weeks ? ` · ${cls.duration_weeks} ${isFr ? "semaines" : "weeks"}` : ""}
+                            </p>
+                          )}
+                          {desc && <p className="text-sm text-white/70 leading-relaxed flex-1">{desc}</p>}
+                          <div className="flex items-center justify-between mt-auto pt-2">
+                            <span className="font-bold text-lg" style={{ color: "var(--color-scx-primary)" }}>
+                              ${price.toFixed(2)}
+                            </span>
+                            <Link
+                              to={`${prefix}/signup?class=${cls.id}`}
+                              className="rounded-full px-4 py-1.5 text-sm font-semibold transition-opacity hover:opacity-80"
+                              style={{ backgroundColor: "var(--color-scx-primary)", color: "var(--color-scx-ink)" }}
+                            >
+                              {isFr ? "S'inscrire →" : "Register →"}
+                            </Link>
+                          </div>
+                        </ProjectCard>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              )}
+
+              {/* Summer troupes */}
+              {summerTroupes.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold mb-4" style={{ color: "var(--color-scx-primary)" }}>
+                    {isFr ? "Troupes d'été" : "Summer Troupes"}
+                  </h2>
+                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    {summerTroupes.map((troupe) => {
+                      const name = isFr ? troupe.name_fr : troupe.name_en;
+                      const desc = isFr ? troupe.desc_fr : troupe.desc_en;
+                      const day = getDayName(troupe.start_date, isFr);
+                      const price = Number(troupe.price) || 0;
+                      return (
+                        <ProjectCard key={troupe.idtroupes}>
+                          <h3 className="text-lg font-bold text-white">{name}</h3>
+                          {(day || troupe.time) && (
+                            <p className="text-sm text-white/60">
+                              {day}{day && troupe.time ? " — " : ""}{formatTime(troupe.time)}
+                            </p>
+                          )}
+                          {troupe.studio_name && (
+                            <p className="text-xs text-white/40">{troupe.studio_name}</p>
+                          )}
+                          {desc && <p className="text-sm text-white/70 leading-relaxed flex-1">{desc}</p>}
+                          {price > 0 && (
+                            <span className="font-bold text-lg mt-auto" style={{ color: "var(--color-scx-primary)" }}>
+                              ${price.toFixed(2)}
+                            </span>
+                          )}
+                        </ProjectCard>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
-      <Footer
-        bgVar="var(--color-scx-accent)"
-        stripeVar="#22c55e"
-        fgVar="#fff"
-      />
+      <Footer />
     </>
   );
 }
