@@ -1,3 +1,18 @@
+// UpcomingCalendar.jsx — Live weekly class schedule grid
+//
+// Used on: Landing (homepage) and GroupClasses page.
+// Data sources:
+//   - GET /public/classes   → regular and summer classes (filtered to not-yet-past)
+//   - GET /public/troupes   → summer troupes (displayed by their recurring weekday)
+//
+// Layout:
+//   - Mobile: stacked cards grouped by day
+//   - Desktop: time × weekday grid (like a calendar)
+//
+// Color coding: cyan = upcoming class, green = ongoing, yellow = summer project, blue = troupe
+// Clicking a class card links to /signup?class=ID; clicking a troupe card links to /troupes.
+// Troupes are shown at their next upcoming occurrence of the same weekday (not the original date).
+
 import { useState, useEffect } from "react";
 import { useI18n } from "../i18n/useI18n";
 import { useParams, Link } from "react-router-dom";
@@ -44,6 +59,15 @@ function timeToKey(time) {
   return String(time || "").replace(":", "").slice(0, 4);
 }
 
+function fmtDuration(minutes) {
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h && m) return `${h}h${String(m).padStart(2, "0")}`;
+  if (h) return `${h}h`;
+  return `${m}min`;
+}
+
 function fmtTimeLabel(timeKey) {
   const hh = parseInt(timeKey.slice(0, 2), 10);
   const mm = timeKey.slice(2);
@@ -56,7 +80,21 @@ function shortTitle(fullName = "") {
   return fullName.split(" - ")[0].split(" — ")[0].trim();
 }
 
-function buildEvents(apiClasses, lang, onlyUpcoming = false) {
+const COLORS = {
+  troupe:  "#3b82f6", // blue
+  summer:  "#eab308", // yellow
+  ongoing: "#86efac", // light green
+  future:  "#22d3ee", // cyan
+};
+
+function getEventColor(e) {
+  if (e.isTroupe) return COLORS.troupe;
+  if (e.isSummer) return COLORS.summer;
+  if (e.isOngoing) return COLORS.ongoing;
+  return COLORS.future;
+}
+
+function buildEvents(apiClasses, lang) {
   const todayKey = toLocalDateKey(new Date());
 
   return apiClasses
@@ -66,7 +104,6 @@ function buildEvents(apiClasses, lang, onlyUpcoming = false) {
         ? toLocalDateKey(new Date(new Date(c.date + "T12:00:00").getTime() + (c.duration_weeks - 1) * 7 * 86400000))
         : c.date;
       if (lastDate < todayKey) return false;
-      if (onlyUpcoming && c.date < todayKey && !c.is_dropin) return false;
       return true;
     })
     .map((c) => {
@@ -84,6 +121,10 @@ function buildEvents(apiClasses, lang, onlyUpcoming = false) {
         startDate: c.date,
         price: c.price,
         link: c.square_link || null,
+        isSummer: !!c.is_summer,
+        isOngoing: c.date < todayKey,
+        durationWeeks: c.duration_weeks || null,
+        durationMins: c.duration || null,
       };
     })
     .filter((e) => e.dayIndex >= 0 && !!e.timeKey);
@@ -93,9 +134,14 @@ function buildTroupeEvents(troupes, lang) {
   // Find the next occurrence of a given day-of-week from today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayKey = toLocalDateKey(today);
 
   return troupes
-    .filter((t) => t.start_date && t.time)
+    .filter((t) => {
+      if (!t.start_date || !t.time) return false;
+      if (t.end_date && t.end_date < todayKey) return false;
+      return true;
+    })
     .map((t) => {
       const startD = new Date(t.start_date);
       const dow = startD.getUTCDay(); // day of week from start_date
@@ -138,7 +184,6 @@ export default function UpcomingCalendar() {
   const [apiClasses, setApiClasses] = useState([]);
   const [apiTroupes, setApiTroupes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [includeOngoing, setIncludeOngoing] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -151,7 +196,7 @@ export default function UpcomingCalendar() {
     });
   }, []);
 
-  const classEvents = buildEvents(apiClasses, lang, !includeOngoing);
+  const classEvents = buildEvents(apiClasses, lang);
   const troupeEvents = buildTroupeEvents(apiTroupes, lang);
   const events = [...classEvents, ...troupeEvents];
   const byDay = groupByDay(events);
@@ -211,17 +256,19 @@ export default function UpcomingCalendar() {
                 {t?.("pages.landing.upcomingTitle") ||
                   (lang === "fr" ? "Cours à venir" : "Upcoming classes")}
               </h3>
-              <label className="flex items-center gap-2 cursor-pointer select-none mt-1">
-                <input
-                  type="checkbox"
-                  checked={includeOngoing}
-                  onChange={(e) => setIncludeOngoing(e.target.checked)}
-                  className="w-4 h-4 rounded accent-[color:var(--color-scx-primary)] cursor-pointer"
-                />
-                <span className="text-sm text-white/70">
-                  {lang === "fr" ? "Inclure les cours en cours" : "Include ongoing classes"}
-                </span>
-              </label>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                {[
+                  { color: COLORS.future,  labelFr: "Cours à venir",   labelEn: "Upcoming class" },
+                  { color: COLORS.ongoing, labelFr: "Cours en cours",  labelEn: "Ongoing class" },
+                  { color: COLORS.summer,  labelFr: "Projet d'été",    labelEn: "Summer project" },
+                  { color: COLORS.troupe,  labelFr: "Troupe",          labelEn: "Troupe" },
+                ].map(({ color, labelFr, labelEn }) => (
+                  <span key={color} className="flex items-center gap-1.5 text-xs text-white/60">
+                    <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
+                    {lang === "fr" ? labelFr : labelEn}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Mobile: list by day */}
@@ -239,12 +286,21 @@ export default function UpcomingCalendar() {
                           href={undefined}
                           to={e.isTroupe ? troupesPath : signupPath(e.id)}
                           className={`grid grid-cols-[1fr_auto] items-start gap-x-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
-                          style={{ boxShadow: e.isTroupe ? "inset 4px 0 0 0 var(--color-scx-accent)" : "inset 4px 0 0 0 var(--color-scx-primary)" }}
+                          style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                           title={e.desc || e.name}>
                           <div className="min-w-0 text-left">
                             <div className="text-base font-semibold leading-tight truncate">{e.shortName}</div>
                             <div className="mt-0.5 text-sm text-white/60">
                               {fmtTimeLabel(e.timeKey)}
+                              {!e.isTroupe && e.startDate && (
+                                <span className="ml-2 text-white/40">· {uiStartsLabel} {formatHumanDate(e.startDate, lang)}</span>
+                              )}
+                              {!e.isTroupe && e.durationMins && (
+                                <span className="ml-2 text-white/40">· {fmtDuration(e.durationMins)}</span>
+                              )}
+                              {!e.isTroupe && e.durationWeeks && (
+                                <span className="ml-2 text-white/40">· {e.durationWeeks} {lang === "fr" ? "sem." : "wks"}</span>
+                              )}
                             </div>
                             {e.desc ? (
                               <div className="mt-1 text-sm text-white/70 line-clamp-2">{e.desc}</div>
@@ -294,7 +350,7 @@ export default function UpcomingCalendar() {
                                   href={undefined}
                                   to={e.isTroupe ? troupesPath : signupPath(e.id)}
                                   className={`rounded-xl border border-white/10 px-3 py-2 bg-white/5 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
-                                  style={{ boxShadow: e.isTroupe ? "inset 4px 0 0 0 var(--color-scx-accent)" : "inset 4px 0 0 0 var(--color-scx-primary)" }}
+                                  style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                                   title={e.desc || e.name}>
                                   <div className="text-sm font-semibold leading-tight text-white">{e.shortName}</div>
                                   {!e.isTroupe && (
