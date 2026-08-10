@@ -1,3 +1,16 @@
+// SummerSignUp.jsx — Registration form for summer TROUPES (performance groups)
+//
+// This is NOT the form for summer classes — those go through SignUp.jsx with ?class=ID.
+// This form is specifically for troupes: Blues Troupe, etc.
+//
+// Data flow:
+//   - Fetches troupe list from GET /public/summer-troupes
+//   - Submits registration to POST /public/register-summer
+//
+// 2-for-1: if exactly 2 troupes are selected, each is shown at half price (isBundle logic)
+// Monthly billing: prices shown as /mois — troupe fees are billed monthly
+// Bot protection: reCAPTCHA v3 + startTimeRef (elapsed time since page load)
+
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";

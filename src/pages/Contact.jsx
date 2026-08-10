@@ -1,4 +1,8 @@
-// src/pages/Contact.jsx
+// Contact.jsx — Contact form (/contact)
+// Sends email via EmailJS (no server involved — the JS SDK sends directly to the EmailJS API).
+// EmailJS credentials are in VITE_EMAILJS_* env vars.
+// Includes honeypot field (hidden "website" input) for basic bot filtering — never rendered visibly.
+
 import { useParams, useSearchParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
 import Container from "../components/Container";

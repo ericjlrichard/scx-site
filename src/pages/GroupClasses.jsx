@@ -1,3 +1,7 @@
+// GroupClasses.jsx — Group classes info page (/group-classes)
+// Thin page: hero + live UpcomingCalendar grid (same component as homepage) + footer.
+// CTA links to /signup (SignUp.jsx).
+
 import { useParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
 import PageHero from "../components/PageHero";

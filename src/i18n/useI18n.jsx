@@ -1,4 +1,11 @@
-// src/i18n/useI18n.jsx
+// useI18n.jsx — Bilingual i18n hook (French / English)
+//
+// Usage: const { t } = useI18n();  →  t("pages.landing.cta") looks up the key in en.json or fr.json
+// Locale is derived from the :lang URL param. No param → French (default).
+// Translation files: src/i18n/fr.json (primary) and src/i18n/en.json
+//
+// Also exports <LangToggle> (the FR/EN toggle button shown in the header).
+
 import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import en from "./en.json";

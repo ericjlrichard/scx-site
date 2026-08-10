@@ -1,3 +1,6 @@
+// Privates.jsx — Private lessons info page (/privates)
+// Static info page; CTA links to the Contact page for bookings.
+
 import { useParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
 import PageHero from "../components/PageHero";

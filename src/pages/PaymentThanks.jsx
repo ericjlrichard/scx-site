@@ -1,3 +1,13 @@
+// PaymentThanks.jsx — Post-payment confirmation page (/payment-thanks)
+//
+// Square redirects here after a successful card payment, with ?ref=<invoiceNumbers> in the URL.
+// This page hits /public/payment-confirm to:
+//   1. Mark the invoice(s) as paid
+//   2. Trigger a confirmation email to the student
+//
+// status states: "loading" | "success" | "error" | "already_paid"
+// "already_paid" means the invoice was already marked paid (e.g. user refreshed the page).
+
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import PageHero from "../components/PageHero";
