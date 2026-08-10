@@ -1,4 +1,10 @@
-// src/components/Header.jsx
+// Header.jsx — Site-wide navigation bar
+//
+// Desktop: horizontal nav with hover-based dropdowns (mouse-leave timer prevents flicker).
+// Mobile: hamburger → full-screen overlay with accordion submenus.
+// `prefix` builds locale-aware links (/fr/... vs /en/...).
+// Nav item definitions live in MenuItems.jsx.
+
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useI18n } from "../i18n/useI18n";
@@ -55,6 +61,10 @@ export default function Header() {
         {
           label: t("nav.troupes", "Troupes"),
           to: `${prefix}/troupes`,
+        },
+        {
+          label: t("nav.register", "S'inscrire"),
+          to: `${prefix}/signup`,
         },
       ],
     },
@@ -151,8 +161,8 @@ export default function Header() {
             </Link>
 
             {/* Desktop nav (centered) */}
-            <nav className="hidden md:flex flex-1 items-center justify-center text-[15px] md:text-[16px] leading-6">
-              <ul className="flex items-center gap-5 lg:gap-7">
+            <nav className="hidden md:flex flex-1 items-center justify-center text-[13px] lg:text-[15px] xl:text-[16px] leading-6">
+              <ul className="flex items-center gap-2 lg:gap-5 xl:gap-7">
                 {NAV.map((item) => {
                   const isOpen =
                     submenu?.key === item.key && submenu.items?.length;
@@ -165,7 +175,7 @@ export default function Header() {
                       <Link
                         to={item.to}
                         className={
-                          "px-3 py-2 md:px-3.5 md:py-2.5 rounded-xl " +
+                          "px-2 py-2 lg:px-3 lg:py-2 xl:px-3.5 xl:py-2.5 rounded-xl " +
                           "text-white/90 hover:bg-white/10 focus:outline-none " +
                           "focus-visible:ring-2 focus-visible:ring-white/20 inline-flex items-center gap-2"
                         }

@@ -33,6 +33,11 @@ export default function MenuItems({
           to: `${prefix}/troupes`,
           label: t("nav.troupes"),
         },
+        {
+          kind: "link",
+          to: `${prefix}/signup`,
+          label: t("nav.register"),
+        },
       ],
     },
     {
@@ -66,19 +71,6 @@ export default function MenuItems({
             >
               {it.label}
             </Link>
-          );
-        }
-        if (it.kind === "ext") {
-          return (
-            <a
-              key={it.label}
-              href={it.href}
-              onClick={onNavigate}
-              className={itemClassName}
-              target="_blank"
-            >
-              {it.label}
-            </a>
           );
         }
         if (it.kind === "menu") {
