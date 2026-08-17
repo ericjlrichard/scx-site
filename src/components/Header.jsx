@@ -98,6 +98,12 @@ export default function Header() {
     },
 
     {
+      key: "faq",
+      label: t("nav.faq", "FAQ"),
+      to: `${prefix}/faq`,
+    },
+
+    {
       key: "register",
       label: t("nav.register", "Register"),
       to: `${prefix}/signup`,

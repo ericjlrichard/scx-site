@@ -50,6 +50,7 @@ export default function MenuItems({
     },
     { kind: "link", to: `${prefix || "/"}#schedule`, label: t("nav.schedule") },
     { kind: "link", to: `${prefix}/contact`, label: t("nav.contact") },
+    { kind: "link", to: `${prefix}/faq`, label: t("nav.faq") },
 
     { kind: "link", to: `${prefix}/signup`, label: t("nav.register") },
   ];

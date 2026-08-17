@@ -10,6 +10,12 @@
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "swing montreal, cours de danse montreal, contact swing connexion"
   },
+  "faq": {
+    "title": "FAQ — Swing ConneXion | Danse Swing Montréal",
+    "desc": "Réponses aux questions fréquentes sur les cours, l'inscription et le studio de Swing ConneXion — l'école de danse swing du Plateau Mont-Royal.",
+    "image": "https://www.swingconnexion.com/images/meta_splash.png",
+    "tags": "swing montreal, cours de danse montreal, faq swing connexion"
+  },
   "landing": {
     "title": "Swing ConneXion — Cours de Danse Swing à Montréal",
     "desc": "L’école de swing du Plateau Mont-Royal. Lindy Hop, Balboa, Charleston — cours de groupe, leçons privées et jazz live chaque mercredi.",
@@ -71,9 +77,10 @@
   "nav": {
     "courses": "Cours",
     "tickets": "Billets SCX20",
-    "scx20": "SCX20 Anniversaire",
+    "scx20": "SCX20",
     "scx20Website": "Visitez le site web SCX20",
     "contact": "Contact",
+    "faq": "FAQ",
     "groupClasses": "Cours de groupe",
     "introClasses": "Cours d'essai",
     "privateLessons": "Cours privés",

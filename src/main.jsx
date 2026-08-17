@@ -23,6 +23,7 @@ import SummerSignUp from "./pages/SummerSignUp";
 import Troupes from "./pages/Troupes";
 import PaymentThanks from "./pages/PaymentThanks";
 import CodeOfConduct from "./pages/CodeOfConduct";
+import Faq from "./pages/Faq";
 import NotFound from "./pages/NotFound";
 
 const router = createBrowserRouter([
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
+      { path: "faq", element: <Faq /> },
 
       // 404 for any other /... path
       { path: "*", element: <NotFound /> },
@@ -68,6 +70,7 @@ const router = createBrowserRouter([
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
+      { path: "faq", element: <Faq /> },
 
       // 404 for any other /:lang/... path
       { path: "*", element: <NotFound /> },
