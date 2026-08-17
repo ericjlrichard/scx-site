@@ -249,6 +249,14 @@ export default function SummerSignUp() {
   const [error, setError] = useState("");
   const startTimeRef = useRef(Date.now());
 
+  // Single-page step flow (no route change between steps), so React
+  // Router's scroll restoration never kicks in — without this, advancing a
+  // step while scrolled down leaves the next step's content below the
+  // fold, looking like the page did nothing.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
+
   // "How did you hear about us?" — this form has no new/returning toggle, so it's always
   // shown; the backend's find-or-create-by-email logic makes it a no-op for a returning student.
   const [referralSources, setReferralSources] = useState([]);

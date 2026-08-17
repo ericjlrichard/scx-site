@@ -487,6 +487,15 @@ export default function SignUp() {
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareError, setSquareError] = useState(null);
 
+  // This is a single-page step flow (no route change between steps), so
+  // React Router's scroll restoration never kicks in — without this, a step
+  // change while scrolled down (e.g. hitting "Review" from the bottom of a
+  // long class list) leaves the next step's content below the fold, looking
+  // like the page did nothing.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step, submitted]);
+
   // Mercredis Swing mode
   const [mercredisSwing, setMercredisSwing] = useState(false);
   const [rebateAmount, setRebateAmount] = useState(20);
