@@ -19,7 +19,6 @@ import Privates from "./pages/Privates";
 import Contact from "./pages/Contact";
 import Staff from "./pages/Staff";
 import SignUp from "./pages/SignUp";
-import SummerSignUp from "./pages/SummerSignUp";
 import Troupes from "./pages/Troupes";
 import PaymentThanks from "./pages/PaymentThanks";
 import CodeOfConduct from "./pages/CodeOfConduct";
@@ -41,7 +40,6 @@ const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
       { path: "signup", element: <SignUp /> },
-      { path: "summer", element: <SummerSignUp /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
@@ -66,7 +64,6 @@ const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "staff", element: <Staff /> },
       { path: "signup", element: <SignUp /> },
-      { path: "summer", element: <SummerSignUp /> },
       { path: "payment-thanks", element: <PaymentThanks /> },
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },

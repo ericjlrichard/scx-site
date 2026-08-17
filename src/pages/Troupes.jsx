@@ -3,7 +3,8 @@
 //   - Summer classes  (GET /public/classes filtered to is_summer && !is_pass)
 //   - Summer troupes  (GET /public/summer-troupes — performance groups like Blues Troupe)
 // Summer class cards link to /signup?class=ID (SignUp.jsx).
-// Summer troupes are informational only on this page; registration is via SummerSignUp.jsx.
+// Summer troupes are informational only here — no public self-serve
+// registration exists for them; staff add students via Dome's Troupes roster.
 
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
