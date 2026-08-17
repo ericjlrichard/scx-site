@@ -89,7 +89,7 @@ function DropInHat({ lang }) {
       className="absolute -top-2 -right-2 w-6 h-6 drop-shadow-md"
       title={lang === "fr" ? "À la carte disponible" : "Drop-ins available"}
     >
-      <svg viewBox="0 0 24 24" className="w-full h-full" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="w-full h-full rotate-[40deg]" aria-hidden="true">
         <path d="M12 2 L20 20 L4 20 Z" fill="var(--color-scx-primary)" stroke="#1a1a1a" strokeWidth="1" strokeLinejoin="round" />
         <path d="M6.6 14.5 L17.4 14.5" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
         <path d="M5.3 17.3 L18.7 17.3" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
@@ -142,7 +142,7 @@ function buildEvents(apiClasses, lang) {
         link: c.square_link || null,
         isSummer: !!c.is_summer,
         isOngoing: c.date < todayKey,
-        isDropin: Number(c.dropin_price) > 0,
+        isDropin: !!c.is_dropin,
         durationWeeks: c.duration_weeks || null,
         durationMins: c.duration || null,
       };
