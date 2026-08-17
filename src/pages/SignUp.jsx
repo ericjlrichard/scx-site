@@ -404,6 +404,13 @@ export default function SignUp() {
   const [domeLoading, setDomeLoading] = useState(false);
   const [domeError, setDomeError] = useState(null);
 
+  // "How did you hear about us?" — only asked of brand-new students, never Dome-authenticated ones
+  const [referralSources, setReferralSources] = useState([]);
+  const [selectedReferralSources, setSelectedReferralSources] = useState([]);
+  useEffect(() => {
+    fetch(`${API}/referral-sources`).then((r) => r.json()).then(setReferralSources).catch(() => {});
+  }, []);
+
   // Auto-login: check URL token first, then fall back to cookie
   useEffect(() => {
     const urlToken = searchParams.get("domeToken") || getDomeCookie();
@@ -694,6 +701,7 @@ export default function SignUp() {
           note,
           promoCodes: appliedPromos.map((p) => p.code),
           waiverAccepted,
+          referralSourceIds: selectedReferralSources,
         }),
       });
       const data = await res.json();
@@ -1103,6 +1111,39 @@ export default function SignUp() {
                           ))}
                         </div>
                         {errors.role && <p className="mt-1.5 text-xs text-red-400">{errors.role}</p>}
+                      </div>
+                    )}
+
+                    {loginMode === "new" && !domeUser && referralSources.length > 0 && (
+                      <div>
+                        <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-2">
+                          {locale === "fr" ? "Comment avez-vous entendu parler de nous ?" : "How did you hear about us?"}
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {referralSources.map((src) => {
+                            const checked = selectedReferralSources.includes(src.idreferral_sources);
+                            return (
+                              <button
+                                key={src.idreferral_sources}
+                                type="button"
+                                onClick={() =>
+                                  setSelectedReferralSources((prev) =>
+                                    checked
+                                      ? prev.filter((id) => id !== src.idreferral_sources)
+                                      : [...prev, src.idreferral_sources]
+                                  )
+                                }
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                  checked
+                                    ? "bg-[var(--color-scx-primary)] text-white"
+                                    : "bg-white/10 text-white/60 hover:bg-white/20"
+                                }`}
+                              >
+                                {locale === "fr" ? src.name_fr : src.name_en}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 

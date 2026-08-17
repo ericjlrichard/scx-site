@@ -249,6 +249,11 @@ export default function SummerSignUp() {
   const [error, setError] = useState("");
   const startTimeRef = useRef(Date.now());
 
+  // "How did you hear about us?" — this form has no new/returning toggle, so it's always
+  // shown; the backend's find-or-create-by-email logic makes it a no-op for a returning student.
+  const [referralSources, setReferralSources] = useState([]);
+  const [selectedReferralSources, setSelectedReferralSources] = useState([]);
+
   useEffect(() => {
     loadRecaptcha();
     fetch(`${API}/summer-troupes`)
@@ -256,6 +261,7 @@ export default function SummerSignUp() {
       .then(setTroupes)
       .catch(() => setTroupes([]))
       .finally(() => setLoading(false));
+    fetch(`${API}/referral-sources`).then((r) => r.json()).then(setReferralSources).catch(() => {});
   }, []);
 
   const isBundle = selected.length === 2;
@@ -292,6 +298,7 @@ export default function SummerSignUp() {
           phone: form.phone,
           role: form.role,
           troupeIds: selected.map((t) => t.idtroupes),
+          referralSourceIds: selectedReferralSources,
         }),
       });
       const data = await res.json();
@@ -474,6 +481,36 @@ export default function SummerSignUp() {
                     ))}
                   </div>
                 </Field>
+
+                {referralSources.length > 0 && (
+                  <Field label={fr ? "Comment avez-vous entendu parler de nous ?" : "How did you hear about us?"}>
+                    <div className="flex flex-wrap gap-2">
+                      {referralSources.map((src) => {
+                        const checked = selectedReferralSources.includes(src.idreferral_sources);
+                        return (
+                          <button
+                            key={src.idreferral_sources}
+                            type="button"
+                            onClick={() =>
+                              setSelectedReferralSources((prev) =>
+                                checked
+                                  ? prev.filter((id) => id !== src.idreferral_sources)
+                                  : [...prev, src.idreferral_sources]
+                              )
+                            }
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                              checked
+                                ? "bg-amber-400 border-amber-400 text-amber-900"
+                                : "bg-white/10 border-white/15 text-white/60 hover:bg-white/20"
+                            }`}
+                          >
+                            {fr ? src.name_fr : src.name_en}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </Field>
+                )}
 
                 <div className="mt-6 flex justify-between">
                   <button onClick={() => setStep("projects")} className="px-6 py-3 rounded-2xl text-white/60 hover:text-white transition">
