@@ -13,6 +13,7 @@ const ROTATE_MS = 7000;
 export default function SplashCarousel({ lang }) {
   const [splashes, setSplashes] = useState([]);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     fetch("https://api.swingconnexion.com/public/splashes")
@@ -28,10 +29,13 @@ export default function SplashCarousel({ lang }) {
   const swipeHandlers = useSwipe(next, prev);
 
   useEffect(() => {
-    if (count < 2) return undefined;
+    // Paused while the visitor is reading one (hover, focus, or a touch in
+    // progress) — otherwise it can rotate away mid-read on a slow connection
+    // or a slide with more text.
+    if (count < 2 || paused) return undefined;
     const id = setInterval(next, ROTATE_MS);
     return () => clearInterval(id);
-  }, [count, next, index]);
+  }, [count, next, index, paused]);
 
   if (count === 0) return null;
 
@@ -46,12 +50,20 @@ export default function SplashCarousel({ lang }) {
       key={s.idsplashes}
       src={image}
       alt={title}
-      className="select-none mt-6 max-w-[280px] sm:max-w-[320px] md:max-w-[360px]"
+      className="select-none mt-6 max-w-[300px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[440px] xl:max-w-[500px]"
     />
   );
 
   return (
-    <div {...swipeHandlers} className="flex flex-col items-center">
+    <div
+      onTouchStart={(e) => { setPaused(true); swipeHandlers.onTouchStart(e); }}
+      onTouchEnd={(e) => { setPaused(false); swipeHandlers.onTouchEnd(e); }}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+      className="flex flex-col items-center"
+    >
       {s.cta_url ? (
         isExternalLink ? (
           <a href={s.cta_url} target="_blank" rel="noopener noreferrer">{imageEl}</a>
