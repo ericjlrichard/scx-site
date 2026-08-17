@@ -80,21 +80,35 @@ function shortTitle(fullName = "") {
   return fullName.split(" - ")[0].split(" — ")[0].trim();
 }
 
-// A literal little paper party hat — perched in a card's top-right corner
-// to flag classes that accept drop-ins, since that's otherwise buried in
-// the signup flow and easy to miss just glancing at the grid.
+// The classic folded-newspaper hat silhouette — a peaked crown with a brim
+// and two triangular flaps sticking out the sides, not a birthday-party
+// cone. Center crease + brim fold lines are the paper-fold detail.
+function PaperHatIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        d="M12 2 L16 11 L22 8 L20 17 L19 18 L5 18 L4 17 L2 8 L8 11 Z"
+        fill="var(--color-scx-primary)"
+        stroke="#1a1a1a"
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+      <path d="M12 2 L12 18" stroke="#1a1a1a" strokeWidth="0.75" opacity="0.35" />
+      <path d="M8 11 L16 11" stroke="#1a1a1a" strokeWidth="0.75" opacity="0.35" />
+    </svg>
+  );
+}
+
+// Perched in a card's top-right corner to flag classes that accept
+// drop-ins, since that's otherwise buried in the signup flow and easy to
+// miss just glancing at the grid.
 function DropInHat({ lang }) {
   return (
     <span
       className="absolute -top-2 -right-2 w-6 h-6 drop-shadow-md"
       title={lang === "fr" ? "À la carte disponible" : "Drop-ins available"}
     >
-      <svg viewBox="0 0 24 24" className="w-full h-full rotate-[40deg]" aria-hidden="true">
-        <path d="M12 2 L20 20 L4 20 Z" fill="var(--color-scx-primary)" stroke="#1a1a1a" strokeWidth="1" strokeLinejoin="round" />
-        <path d="M6.6 14.5 L17.4 14.5" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
-        <path d="M5.3 17.3 L18.7 17.3" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
-        <circle cx="12" cy="2" r="2" fill="#fff" stroke="#1a1a1a" strokeWidth="0.75" />
-      </svg>
+      <PaperHatIcon className="w-full h-full rotate-[40deg]" />
     </span>
   );
 }
@@ -288,6 +302,10 @@ export default function UpcomingCalendar() {
                     {lang === "fr" ? labelFr : labelEn}
                   </span>
                 ))}
+                <span className="flex items-center gap-1.5 text-xs text-white/60">
+                  <PaperHatIcon className="w-3.5 h-3.5 shrink-0" />
+                  {lang === "fr" ? "À la carte disponible" : "Drop-in available"}
+                </span>
               </div>
             </div>
 
