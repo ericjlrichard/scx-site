@@ -50,9 +50,12 @@ export default function SplashCarousel({ lang }) {
       key={s.idsplashes}
       src={image}
       alt={title}
-      className="select-none mt-6 max-w-[300px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[440px] xl:max-w-[500px]"
+      className="select-none max-w-[300px] sm:max-w-[340px] md:max-w-[400px] lg:max-w-[440px] xl:max-w-[500px]"
     />
   );
+
+  const arrowClass =
+    "absolute top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white text-2xl leading-none transition-colors";
 
   return (
     <div
@@ -64,15 +67,23 @@ export default function SplashCarousel({ lang }) {
       onBlur={() => setPaused(false)}
       className="flex flex-col items-center"
     >
-      {s.cta_url ? (
-        isExternalLink ? (
-          <a href={s.cta_url} target="_blank" rel="noopener noreferrer">{imageEl}</a>
+      <div className="relative inline-flex items-center justify-center mt-6">
+        {count > 1 && (
+          <button onClick={prev} aria-label="Previous" className={`${arrowClass} left-2`}>‹</button>
+        )}
+        {s.cta_url ? (
+          isExternalLink ? (
+            <a href={s.cta_url} target="_blank" rel="noopener noreferrer">{imageEl}</a>
+          ) : (
+            <Link to={s.cta_url}>{imageEl}</Link>
+          )
         ) : (
-          <Link to={s.cta_url}>{imageEl}</Link>
-        )
-      ) : (
-        imageEl
-      )}
+          imageEl
+        )}
+        {count > 1 && (
+          <button onClick={next} aria-label="Next" className={`${arrowClass} right-2`}>›</button>
+        )}
+      </div>
 
       {(title || desc) && (
         <div className="mt-3 max-w-xl text-center px-4">
@@ -82,19 +93,15 @@ export default function SplashCarousel({ lang }) {
       )}
 
       {count > 1 && (
-        <div className="flex items-center gap-4 mt-3">
-          <button onClick={prev} aria-label="Previous" className="text-white/60 hover:text-white text-2xl px-2 leading-none">‹</button>
-          <div className="flex gap-1.5">
-            {splashes.map((sp, i) => (
-              <button
-                key={sp.idsplashes}
-                onClick={() => setIndex(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/30"}`}
-              />
-            ))}
-          </div>
-          <button onClick={next} aria-label="Next" className="text-white/60 hover:text-white text-2xl px-2 leading-none">›</button>
+        <div className="flex gap-1.5 mt-3">
+          {splashes.map((sp, i) => (
+            <button
+              key={sp.idsplashes}
+              onClick={() => setIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`w-2 h-2 rounded-full transition-colors ${i === index ? "bg-white" : "bg-white/30"}`}
+            />
+          ))}
         </div>
       )}
     </div>
