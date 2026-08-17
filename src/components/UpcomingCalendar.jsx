@@ -80,6 +80,25 @@ function shortTitle(fullName = "") {
   return fullName.split(" - ")[0].split(" — ")[0].trim();
 }
 
+// A literal little paper party hat — perched in a card's top-right corner
+// to flag classes that accept drop-ins, since that's otherwise buried in
+// the signup flow and easy to miss just glancing at the grid.
+function DropInHat({ lang }) {
+  return (
+    <span
+      className="absolute -top-2 -right-2 w-6 h-6 drop-shadow-md"
+      title={lang === "fr" ? "À la carte disponible" : "Drop-ins available"}
+    >
+      <svg viewBox="0 0 24 24" className="w-full h-full" aria-hidden="true">
+        <path d="M12 2 L20 20 L4 20 Z" fill="var(--color-scx-primary)" stroke="#1a1a1a" strokeWidth="1" strokeLinejoin="round" />
+        <path d="M6.6 14.5 L17.4 14.5" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
+        <path d="M5.3 17.3 L18.7 17.3" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
+        <circle cx="12" cy="2" r="2" fill="#fff" stroke="#1a1a1a" strokeWidth="0.75" />
+      </svg>
+    </span>
+  );
+}
+
 const COLORS = {
   troupe:  "#3b82f6", // blue
   summer:  "#eab308", // yellow
@@ -123,6 +142,7 @@ function buildEvents(apiClasses, lang) {
         link: c.square_link || null,
         isSummer: !!c.is_summer,
         isOngoing: c.date < todayKey,
+        isDropin: Number(c.dropin_price) > 0,
         durationWeeks: c.duration_weeks || null,
         durationMins: c.duration || null,
       };
@@ -285,9 +305,10 @@ export default function UpcomingCalendar() {
                         <CardWrapper key={e.id}
                           href={undefined}
                           to={e.isTroupe ? troupesPath : signupPath(e.id)}
-                          className={`grid grid-cols-[1fr_auto] items-start gap-x-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
+                          className={`relative grid grid-cols-[1fr_auto] items-start gap-x-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
                           style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                           title={e.desc || e.name}>
+                          {e.isDropin && <DropInHat lang={lang} />}
                           <div className="min-w-0 text-left">
                             <div className="text-base font-semibold leading-tight truncate">{e.shortName}</div>
                             <div className="mt-0.5 text-sm text-white/60">
@@ -349,9 +370,10 @@ export default function UpcomingCalendar() {
                                 <CardWrapper key={e.id}
                                   href={undefined}
                                   to={e.isTroupe ? troupesPath : signupPath(e.id)}
-                                  className={`rounded-xl border border-white/10 px-3 py-2 bg-white/5 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
+                                  className={`relative rounded-xl border border-white/10 px-3 py-2 bg-white/5 transition-colors cursor-pointer hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/30`}
                                   style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                                   title={e.desc || e.name}>
+                                  {e.isDropin && <DropInHat lang={lang} />}
                                   <div className="text-sm font-semibold leading-tight text-white">{e.shortName}</div>
                                   {!e.isTroupe && (
                                     <div className="text-xs text-white/70 mt-0.5">
