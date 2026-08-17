@@ -1,7 +1,7 @@
 // PaymentThanks.jsx — Post-payment confirmation page (/payment-thanks)
 //
 // Square redirects here after a successful card payment, with ?ref=<invoiceNumbers> in the URL.
-// This page hits /public/payment-confirm to:
+// This page hits /public/payment-received to:
 //   1. Mark the invoice(s) as paid
 //   2. Trigger a confirmation email to the student
 //
