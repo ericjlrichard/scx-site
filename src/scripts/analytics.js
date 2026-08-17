@@ -45,3 +45,15 @@ export function trackPageView(path) {
   if (typeof window === "undefined" || !window.gtag) return;
   window.gtag("event", "page_view", { page_path: path });
 }
+
+// Fired once a registration actually completes (SignUp.jsx) — the missing
+// half of channel attribution. GA already knows which door (channel) a
+// visitor walked in through; this is what lets it connect that to an
+// actual outcome instead of just traffic. `value` is the pre-tax
+// subtotal — an approximation (promo/discount math already applied,
+// tax not included), good enough for comparing channels against each
+// other, not for accounting.
+export function trackRegistration({ value, currency = "CAD" } = {}) {
+  if (typeof window === "undefined" || !window.gtag) return;
+  window.gtag("event", "registration_complete", { value, currency });
+}

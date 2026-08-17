@@ -31,6 +31,7 @@ import Footer from "../components/Footer";
 import Container from "../components/Container";
 import Button from "../components/Button";
 import Spinner from "../components/Spinner";
+import { trackRegistration } from "../scripts/analytics";
 
 const API = "https://api.swingconnexion.com/public";
 const GST_RATE = 0.05;
@@ -717,6 +718,7 @@ export default function SignUp() {
       if (!res.ok) throw new Error(data.error || "Submission failed.");
       setSubmitResult(data);
       setSubmitted(true);
+      trackRegistration({ value: total });
     } catch (err) {
       setErrors({ submit: err.message });
     } finally {
