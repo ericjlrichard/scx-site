@@ -113,19 +113,20 @@ function DropInHat({ lang }) {
   );
 }
 
-// Roles (leads/follows, set in Dome → Classes) with a low-but-nonzero
-// spots-left count -- 0 means that role is already fully closed (shown
-// elsewhere as its own "closed" state on the signup page), this is
-// specifically the "hurry, almost gone" zone. Troupes have no per-role
+// Roles (leads/follows, set in Dome → Classes) at 0-3 spots left -- the
+// whole "oh shit, this is going fast" zone, 0 (fully closed for that
+// role, shown separately as its own red badge on the signup page)
+// included, since the flame here is purely an urgency cue, not a
+// distinction between "almost" and "already." Troupes have no per-role
 // capacity data on this endpoint, so they never flag.
 const ALMOST_FULL_MAX = 3;
 function almostFullRoles(e) {
   if (e.isTroupe) return [];
   const lows = [];
-  if (e.spotsLeftLeads != null && e.spotsLeftLeads >= 1 && e.spotsLeftLeads <= ALMOST_FULL_MAX) {
+  if (e.spotsLeftLeads != null && e.spotsLeftLeads >= 0 && e.spotsLeftLeads <= ALMOST_FULL_MAX) {
     lows.push({ role: "leads", count: e.spotsLeftLeads });
   }
-  if (e.spotsLeftFollows != null && e.spotsLeftFollows >= 1 && e.spotsLeftFollows <= ALMOST_FULL_MAX) {
+  if (e.spotsLeftFollows != null && e.spotsLeftFollows >= 0 && e.spotsLeftFollows <= ALMOST_FULL_MAX) {
     lows.push({ role: "follows", count: e.spotsLeftFollows });
   }
   return lows;
@@ -137,6 +138,9 @@ function almostFullText(lows, lang) {
       const roleLabel = lang === "fr"
         ? (role === "leads" ? "leads" : "follows")
         : (role === "leads" ? "Leads" : "Follows");
+      if (count === 0) {
+        return lang === "fr" ? `Complet pour les ${roleLabel} !` : `Full for ${roleLabel}!`;
+      }
       if (lang === "fr") {
         return count === 1
           ? `Plus qu'une place pour les ${roleLabel} !`
