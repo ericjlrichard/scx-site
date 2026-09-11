@@ -113,6 +113,58 @@ function DropInHat({ lang }) {
   );
 }
 
+// Roles (leads/follows, set in Dome → Classes) with a low-but-nonzero
+// spots-left count -- 0 means that role is already fully closed (shown
+// elsewhere as its own "closed" state on the signup page), this is
+// specifically the "hurry, almost gone" zone. Troupes have no per-role
+// capacity data on this endpoint, so they never flag.
+const ALMOST_FULL_MAX = 3;
+function almostFullRoles(e) {
+  if (e.isTroupe) return [];
+  const lows = [];
+  if (e.spotsLeftLeads != null && e.spotsLeftLeads >= 1 && e.spotsLeftLeads <= ALMOST_FULL_MAX) {
+    lows.push({ role: "leads", count: e.spotsLeftLeads });
+  }
+  if (e.spotsLeftFollows != null && e.spotsLeftFollows >= 1 && e.spotsLeftFollows <= ALMOST_FULL_MAX) {
+    lows.push({ role: "follows", count: e.spotsLeftFollows });
+  }
+  return lows;
+}
+
+function almostFullText(lows, lang) {
+  return lows
+    .map(({ role, count }) => {
+      const roleLabel = lang === "fr"
+        ? (role === "leads" ? "leads" : "follows")
+        : (role === "leads" ? "Leads" : "Follows");
+      if (lang === "fr") {
+        return count === 1
+          ? `Plus qu'une place pour les ${roleLabel} !`
+          : `Plus que ${count} places pour les ${roleLabel} !`;
+      }
+      return count === 1
+        ? `Only 1 spot left for ${roleLabel}!`
+        : `Only ${count} spots left for ${roleLabel}!`;
+    })
+    .join(" ");
+}
+
+// Perched top-left (DropInHat already owns top-right) whenever a class is
+// down to its last few spots for a role. The title tooltip carries the
+// "why" on desktop; mobile has no hover, so callers also render
+// almostFullText(...) as a visible line — see the mobile card below.
+function AlmostFullFlame({ lows, lang }) {
+  if (!lows.length) return null;
+  return (
+    <span
+      className="absolute -top-2 -left-2 w-6 h-6 drop-shadow-md text-lg leading-none flex items-center justify-center"
+      title={almostFullText(lows, lang)}
+    >
+      🔥
+    </span>
+  );
+}
+
 const COLORS = {
   troupe:  "#3b82f6", // blue
   summer:  "#eab308", // yellow
@@ -159,6 +211,8 @@ function buildEvents(apiClasses, lang) {
         isDropin: !!c.is_dropin,
         durationWeeks: c.duration_weeks || null,
         durationMins: c.duration || null,
+        spotsLeftLeads: c.spots_left_leads,
+        spotsLeftFollows: c.spots_left_follows,
       };
     })
     .filter((e) => e.dayIndex >= 0 && !!e.timeKey);
@@ -306,6 +360,9 @@ export default function UpcomingCalendar() {
                   <PaperHatIcon className="w-3.5 h-3.5 shrink-0" />
                   {lang === "fr" ? "À la carte disponible" : "Drop-in available"}
                 </span>
+                <span className="flex items-center gap-1.5 text-xs text-white/60">
+                  🔥 {lang === "fr" ? "Presque complet" : "Almost full"}
+                </span>
               </div>
             </div>
 
@@ -327,6 +384,7 @@ export default function UpcomingCalendar() {
                           style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                           title={e.desc || e.name}>
                           {e.isDropin && <DropInHat lang={lang} />}
+                          {almostFullRoles(e).length > 0 && <AlmostFullFlame lows={almostFullRoles(e)} lang={lang} />}
                           <div className="min-w-0 text-left">
                             <div className="text-base font-semibold leading-tight truncate">{e.shortName}</div>
                             <div className="mt-0.5 text-sm text-white/60">
@@ -341,6 +399,11 @@ export default function UpcomingCalendar() {
                                 <span className="ml-2 text-white/40">· {e.durationWeeks} {lang === "fr" ? "sem." : "wks"}</span>
                               )}
                             </div>
+                            {almostFullRoles(e).length > 0 && (
+                              <div className="mt-1 text-sm font-semibold" style={{ color: "var(--color-scx-primary)" }}>
+                                🔥 {almostFullText(almostFullRoles(e), lang)}
+                              </div>
+                            )}
                             {e.desc ? (
                               <div className="mt-1 text-sm text-white/70 line-clamp-2">{e.desc}</div>
                             ) : null}
@@ -392,6 +455,7 @@ export default function UpcomingCalendar() {
                                   style={{ boxShadow: `inset 4px 0 0 0 ${getEventColor(e)}` }}
                                   title={e.desc || e.name}>
                                   {e.isDropin && <DropInHat lang={lang} />}
+                                  {almostFullRoles(e).length > 0 && <AlmostFullFlame lows={almostFullRoles(e)} lang={lang} />}
                                   <div className="text-sm font-semibold leading-tight text-white">{e.shortName}</div>
                                   {!e.isTroupe && (
                                     <div className="text-xs text-white/70 mt-0.5">
