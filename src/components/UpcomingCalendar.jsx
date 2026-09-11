@@ -139,7 +139,9 @@ function almostFullText(lows, lang) {
         ? (role === "leads" ? "leads" : "follows")
         : (role === "leads" ? "Leads" : "Follows");
       if (count === 0) {
-        return lang === "fr" ? `Complet pour les ${roleLabel} !` : `Full for ${roleLabel}!`;
+        return lang === "fr"
+          ? `Complet pour les ${roleLabel} ! Vous pouvez vous inscrire sur la liste d'attente.`
+          : `Full for ${roleLabel}! You can still sign up for the waiting list.`;
       }
       if (lang === "fr") {
         return count === 1
