@@ -25,6 +25,14 @@ import CodeOfConduct from "./pages/CodeOfConduct";
 import Faq from "./pages/Faq";
 import NotFound from "./pages/NotFound";
 
+// Pages that live on another site (the public studio schedule is served by
+// the Dome admin app) -- a full page load there, not an in-app route.
+const PUBLIC_SCHEDULE_URL = "https://dome.swingconnexion.com/schedule-public";
+const ExternalRedirect = ({ to }) => {
+  React.useEffect(() => window.location.replace(to), [to]);
+  return null;
+};
+
 const router = createBrowserRouter([
   // Plain routes (no language in URL)
   {
@@ -44,6 +52,7 @@ const router = createBrowserRouter([
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
       { path: "faq", element: <Faq /> },
+      { path: "schedule-public", element: <ExternalRedirect to={PUBLIC_SCHEDULE_URL} /> },
 
       // 404 for any other /... path
       { path: "*", element: <NotFound /> },
@@ -68,6 +77,7 @@ const router = createBrowserRouter([
       { path: "troupes", element: <Troupes /> },
       { path: "codeofconduct", element: <CodeOfConduct /> },
       { path: "faq", element: <Faq /> },
+      { path: "schedule-public", element: <ExternalRedirect to={PUBLIC_SCHEDULE_URL} /> },
 
       // 404 for any other /:lang/... path
       { path: "*", element: <NotFound /> },
