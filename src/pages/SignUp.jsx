@@ -485,6 +485,9 @@ export default function SignUp() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitResult, setSubmitResult] = useState(null);
+  // Student credit (Dome → student → Credit): opt-in, with how much to use.
+  const [useCredit, setUseCredit] = useState(false);
+  const [creditInput, setCreditInput] = useState("");
   const [squareLoading, setSquareLoading] = useState(false);
   const [squareError, setSquareError] = useState(null);
 
@@ -629,6 +632,20 @@ export default function SignUp() {
     return sum + Math.max(0, price - classRebate - studentRebateAmt - promo - mercredi - contributor);
   }, 0) + dropinTotal;
 
+  const orderGst = parseFloat((total * GST_RATE).toFixed(2));
+  const orderQst = parseFloat((total * QST_RATE).toFixed(2));
+  const orderGrandTotal = parseFloat((total + orderGst + orderQst).toFixed(2));
+
+  // Credit only for a logged-in student (a guest never sees anyone's
+  // balance), never for contributors (they pay from their own ledger).
+  // It comes off the taxed total, like money. The server re-checks all of
+  // this against the real balance -- what's sent is only a ceiling.
+  const availableCredit = domeUser && domeUser.idstudent_types !== 6 ? Number(domeUser.credit) || 0 : 0;
+  const maxCredit = parseFloat(Math.min(availableCredit, orderGrandTotal).toFixed(2));
+  const creditApplied = useCredit
+    ? parseFloat(Math.min(Math.max(Number(creditInput) || 0, 0), maxCredit).toFixed(2))
+    : 0;
+
   function setField(key, val) {
     setForm((p) => ({ ...p, [key]: val }));
     if (errors[key]) setErrors((p) => ({ ...p, [key]: null }));
@@ -712,11 +729,13 @@ export default function SignUp() {
           promoCodes: appliedPromos.map((p) => p.code),
           waiverAccepted,
           referralSourceIds: selectedReferralSources,
+          creditToUse: creditApplied,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Submission failed.");
       setSubmitResult(data);
+      if (data.creditRemaining != null) setDomeUser((u) => (u ? { ...u, credit: data.creditRemaining } : u));
       setSubmitted(true);
       trackRegistration({ value: total });
     } catch (err) {
@@ -803,6 +822,22 @@ export default function SignUp() {
                       );
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* Credit spent on this order */}
+              {submitResult?.creditUsed > 0 && (
+                <div className="rounded-2xl bg-white/5 border border-white/10 px-5 py-4 mb-4 space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-white/70">{locale === "fr" ? "Crédit utilisé" : "Credit used"}</span>
+                    <span className="text-white font-semibold">−${submitResult.creditUsed.toFixed(2)}</span>
+                  </div>
+                  {submitResult.creditRemaining != null && (
+                    <div className="flex justify-between">
+                      <span className="text-white/50 text-xs">{locale === "fr" ? "Crédit restant" : "Credit remaining"}</span>
+                      <span className="text-white/50 text-xs">${submitResult.creditRemaining.toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1533,6 +1568,47 @@ export default function SignUp() {
                   </div>
                 </div>}
 
+                {/* Student credit — only when there's some to use */}
+                {maxCredit > 0 && (
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useCredit}
+                        onChange={(e) => {
+                          setUseCredit(e.target.checked);
+                          if (e.target.checked) setCreditInput(maxCredit.toFixed(2));
+                        }}
+                        className="mt-1 h-4 w-4 accent-[var(--color-scx-primary)]"
+                      />
+                      <span className="text-sm text-white font-medium">
+                        {locale === "fr"
+                          ? `Utiliser mon crédit (${availableCredit.toFixed(2)} $ disponible)`
+                          : `Use credit ($${availableCredit.toFixed(2)} available)`}
+                      </span>
+                    </label>
+                    {useCredit && (
+                      <div className="flex items-center gap-2 pl-7">
+                        <span className="text-sm text-white/70">{locale === "fr" ? "Montant :" : "Amount:"}</span>
+                        <span className="text-sm text-white/70">$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max={maxCredit}
+                          step="0.01"
+                          value={creditInput}
+                          onChange={(e) => setCreditInput(e.target.value)}
+                          onBlur={() => setCreditInput(creditApplied.toFixed(2))}
+                          className="w-28 rounded-2xl bg-white/10 border border-white/15 px-3 py-2 text-white outline-none focus:ring-2 focus:ring-white/30 text-sm"
+                        />
+                        <span className="text-xs text-white/40">
+                          {locale === "fr" ? `max ${maxCredit.toFixed(2)} $` : `max $${maxCredit.toFixed(2)}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Note */}
                 <div>
                   <label className="block text-[11px] uppercase tracking-wide text-white/70 mb-1.5">
@@ -1550,9 +1626,9 @@ export default function SignUp() {
                 {/* Tax breakdown + Total */}
                 <div className="rounded-2xl bg-[var(--color-scx-primary)]/20 border border-[var(--color-scx-primary)]/40 px-5 py-4 space-y-2">
                   {(() => {
-                    const gst = parseFloat((total * GST_RATE).toFixed(2));
-                    const qst = parseFloat((total * QST_RATE).toFixed(2));
-                    const grandTotal = parseFloat((total + gst + qst).toFixed(2));
+                    const gst = orderGst;
+                    const qst = orderQst;
+                    const grandTotal = parseFloat((orderGrandTotal - creditApplied).toFixed(2));
                     return (
                       <>
                         <div className="flex justify-between text-sm text-white/60">
@@ -1567,6 +1643,12 @@ export default function SignUp() {
                           <span>TVQ / QST (9.975%)</span>
                           <span>${qst.toFixed(2)}</span>
                         </div>
+                        {creditApplied > 0 && (
+                          <div className="flex justify-between text-sm text-white/60">
+                            <span>{locale === "fr" ? "Crédit utilisé" : "Credit used"}</span>
+                            <span>−${creditApplied.toFixed(2)}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between pt-2 border-t border-white/20">
                           <span className="font-bold text-white">Total</span>
                           <span className="text-2xl font-extrabold text-white">
