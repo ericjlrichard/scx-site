@@ -29,13 +29,13 @@
   },
   "introClasses": {
     "title": "Free Weekly Intro Swing Class Montreal | Swing ConneXion",
-    "desc": "Try swing dancing for free every Wednesday at Café La Ligne Verte. Intro class at 7pm followed by three sets of live jazz. No experience needed.",
+    "desc": "Try swing dancing for free every Wednesday at Mercredis Swing. Intro class at 7pm followed by three sets of live jazz. No experience needed.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "free swing class montreal, intro swing dance montreal, mercredis swing, live jazz montreal wednesday"
   },
   "mercredisswing": {
     "title": "Mercredis Swing — Live Jazz & Swing Dancing Montreal",
-    "desc": "Every Wednesday at Café La Ligne Verte: three sets of live jazz at 8pm + a free intro swing class at 7pm. Montreal's weekly swing night since 2007.",
+    "desc": "Every Wednesday at Cosy Montréal: three sets of live jazz at 8pm + a free intro swing class at 7pm. Montreal's weekly swing night since 2007.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "live jazz montreal, swing dancing montreal, mercredis swing, live jazz wednesday montreal, lindy hop social"
   },
@@ -193,7 +193,7 @@
     "intro": {
       "hero": {
         "titleLines": ["WEEKLY", "INTRO", "CLASS"],
-        "desc": "Every Wednesday at Café La Ligne Verte (2531 Ontario Est), come and try out swing dance... for free! Intro class at 7pm 19h, followed by three sets of live jazz and swing music! ",
+        "desc": "Every Wednesday at Cosy Montreal (1483 Mont-Royal Est), come and try out swing dance... for free! Intro class at 7pm 19h, followed by three sets of live jazz and swing music! ",
         "ctaReserve": "Visit the Mercredis Swing FB page",
         "ctaTickets": "Acheter des billets"
       }
@@ -202,7 +202,7 @@
     "mercredisswing": {
       "hero": {
         "titleLines": ["MERCREDIS", "SWING"],
-        "desc": "Since 2007, Swing ConneXion supports live swing music in Montreal! Every Wednesday at Café La Ligne Verte (2531 Ontario Est), we have three sets of live music at 8pm. Curious about swing dancing? Come over at 7pm for a free intro class!",
+        "desc": "Since 2007, Swing ConneXion supports live swing music in Montreal! Every Wednesday at Cosy Montreal (1483 Mont-Royal Est), we have three sets of live music at 8pm. Curious about swing dancing? Come over at 7pm for a free intro class!",
         "ctaReserve": "Visit the Mercredis Swing FB page",
         "ctaTickets": "Acheter des billets"
       }

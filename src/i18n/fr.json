@@ -31,13 +31,13 @@
   },
   "mercredisswing": {
     "title": "Mercredis Swing — Jazz Live & Danse Swing Montréal",
-    "desc": "Chaque mercredi au Café La Ligne Verte : trois sets de jazz live à 20h + cours d’initiation swing gratuit à 19h. La soirée swing de Montréal depuis 2007.",
+    "desc": "Chaque mercredi au Cosy Montreal (1483 Mont-Royal Est) : trois sets de jazz live à 20h + cours d’initiation swing gratuit à 19h. La soirée swing de Montréal depuis 2007.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "jazz live montreal, danse swing montreal, mercredis swing, jazz live mercredi montreal, soirée swing"
   },
   "introClasses": {
     "title": "Cours d’Initiation Swing Gratuit Montréal | Swing ConneXion",
-    "desc": "Essayez la danse swing gratuitement chaque mercredi au Café La Ligne Verte. Cours à 19h suivi de trois sets de jazz live. Aucune expérience requise.",
+    "desc": "Essayez la danse swing gratuitement chaque mercredi au Cosy Montreal (1483 Mont-Royal Est). Cours à 19h suivi de trois sets de jazz live. Aucune expérience requise.",
     "image": "https://www.swingconnexion.com/images/meta_splash.png",
     "tags": "cours de swing gratuit montreal, initiation danse swing, mercredis swing, jazz live montreal mercredi"
   },
@@ -195,7 +195,7 @@
     "intro": {
       "hero": {
         "titleLines": ["COURS", "D'ESSAI"],
-        "desc": "Chaque mercredi au Café La Ligne Verte (2531 Ontario Est), venez essayer le swing! Cours d'intro à 19h, suivi de 3 set de musique live! ",
+        "desc": "Chaque mercredi au Cosy Montreal (1483 Mont-Royal Est), venez essayer le swing! Cours d'intro à 19h, suivi de 3 set de musique live! ",
         "ctaReserve": "Visiter la page Facebook des Mercredis Swing",
         "ctaTickets": "Acheter des billets"
       }
@@ -204,7 +204,7 @@
     "mercredisswing": {
       "hero": {
         "titleLines": ["MERCREDIS", "SWING"],
-        "desc": "Depuis 2007, Swing ConneXion supporte la scène du musique jazz live! Chaque mercredi au Café La Ligne Verte (2531 Ontario Est), trois sets de musique jazz live vous attendent. La danse swing pique votre curiosité? Venez essayer un cours d'intro avec nous à 19h!",
+        "desc": "Depuis 2007, Swing ConneXion supporte la scène du musique jazz live! Chaque mercredi au Cosy Montreal (1483 Mont-Royal Est), trois sets de musique jazz live vous attendent. La danse swing pique votre curiosité? Venez essayer un cours d'intro avec nous à 19h!",
         "ctaReserve": "Visiter la page FB des Mercredis Swing",
         "ctaTickets": "Acheter des billets"
       }
